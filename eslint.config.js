@@ -19,6 +19,9 @@ export default tseslint.config(
       'react/react-in-jsx-scope': 'off',
       // ドメイン層で any を使わないよう警告
       '@typescript-eslint/no-explicit-any': 'error',
+      // ok/err 等のエクスポート名がローカル変数に意図せず上書きされるのを防ぐ
+      'no-shadow': 'off',
+      '@typescript-eslint/no-shadow': 'error',
     },
     settings: {
       react: { version: 'detect' },
