@@ -6,18 +6,16 @@ export class Seed {
   }
 
   static create(value: string): Seed {
-    if (value.length === 0) throw new Error('Seed value must not be empty')
+    if (value.trim().length === 0) throw new Error('Seed value must not be empty or whitespace')
     return new Seed(value)
   }
 
   static generate(): Seed {
-    const timestamp = Date.now().toString(36)
-    const random = Math.random().toString(36).slice(2)
-    return new Seed(`${timestamp}-${random}`)
+    return new Seed(crypto.randomUUID())
   }
 
   static fromString(s: string): Seed {
-    if (s.length === 0) throw new Error('Seed value must not be empty')
+    if (s.trim().length === 0) throw new Error('Seed value must not be empty or whitespace')
     return new Seed(s)
   }
 }

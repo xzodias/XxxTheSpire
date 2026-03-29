@@ -15,6 +15,10 @@ describe('Seed.create', () => {
   it('空文字列の場合はエラーをスローする', () => {
     expect(() => Seed.create('')).toThrow()
   })
+
+  it('ホワイトスペースのみの場合はエラーをスローする', () => {
+    expect(() => Seed.create('   ')).toThrow()
+  })
 })
 
 describe('Seed.generate', () => {
@@ -25,13 +29,15 @@ describe('Seed.generate', () => {
     expect(seed.value.length).toBeGreaterThan(0)
   })
 
-  it('生成するたびに異なるSeedが生成される（高確率）', () => {
-    const seed1 = Seed.generate()
-    const seed2 = Seed.generate()
-    // 乱数なので稀に同じになる可能性があるが、通常は異なる
-    // 統計的に正しいことを確認（100回試行）
+  it('UUID形式のSeedを生成する', () => {
+    const seed = Seed.generate()
+    // crypto.randomUUID() は xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx 形式
+    expect(seed.value).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+  })
+
+  it('生成するたびに異なるSeedが生成される', () => {
     const values = new Set(Array.from({ length: 100 }, () => Seed.generate().value))
-    expect(values.size).toBeGreaterThan(50)
+    expect(values.size).toBe(100)
   })
 })
 
@@ -44,12 +50,15 @@ describe('Seed.fromString', () => {
   it('空文字列の場合はエラーをスローする', () => {
     expect(() => Seed.fromString('')).toThrow()
   })
+
+  it('ホワイトスペースのみの場合はエラーをスローする', () => {
+    expect(() => Seed.fromString('   ')).toThrow()
+  })
 })
 
 describe('Seed value immutability', () => {
   it('valueプロパティはreadonlyである', () => {
     const seed = Seed.create('test')
     expect(seed.value).toBe('test')
-    // TypeScript型レベルでreadonly保証
   })
 })
