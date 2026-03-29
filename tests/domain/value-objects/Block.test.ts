@@ -15,6 +15,14 @@ describe('Block.create', () => {
   it('負の値の場合はエラーをスローする', () => {
     expect(() => Block.create(-1)).toThrow()
   })
+
+  it('NaN の場合はエラーをスローする', () => {
+    expect(() => Block.create(NaN)).toThrow()
+  })
+
+  it('Infinity の場合はエラーをスローする', () => {
+    expect(() => Block.create(Infinity)).toThrow()
+  })
 })
 
 describe('Block#absorb', () => {
@@ -53,6 +61,16 @@ describe('Block#absorb', () => {
     expect(remainingDamage).toBe(10)
   })
 
+  it('負のダメージの場合はエラーをスローする', () => {
+    const block = Block.create(5)
+    expect(() => block.absorb(-5)).toThrow()
+  })
+
+  it('NaN のダメージの場合はエラーをスローする', () => {
+    const block = Block.create(5)
+    expect(() => block.absorb(NaN)).toThrow()
+  })
+
   it('元のオブジェクトは変更されない（イミュータブル）', () => {
     const block = Block.create(5)
     block.absorb(3)
@@ -71,6 +89,16 @@ describe('Block#add', () => {
     const block = Block.create(5)
     const result = block.add(0)
     expect(result.value).toBe(5)
+  })
+
+  it('負の値の場合はエラーをスローする', () => {
+    const block = Block.create(5)
+    expect(() => block.add(-3)).toThrow()
+  })
+
+  it('NaN の場合はエラーをスローする', () => {
+    const block = Block.create(5)
+    expect(() => block.add(NaN)).toThrow()
   })
 
   it('元のオブジェクトは変更されない（イミュータブル）', () => {
