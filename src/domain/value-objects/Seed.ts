@@ -1,3 +1,5 @@
+import { type Result, ok, err } from '../../shared/types'
+
 export class Seed {
   readonly value: string
 
@@ -5,17 +7,17 @@ export class Seed {
     this.value = value
   }
 
-  static create(value: string): Seed {
-    if (value.trim().length === 0) throw new Error('Seed value must not be empty or whitespace')
-    return new Seed(value)
+  static create(value: string): Result<Seed> {
+    if (value.trim().length === 0) return err('Seed value must not be empty or whitespace')
+    return ok(new Seed(value))
   }
 
   static generate(): Seed {
     return new Seed(crypto.randomUUID())
   }
 
-  static fromString(s: string): Seed {
-    if (s.trim().length === 0) throw new Error('Seed value must not be empty or whitespace')
-    return new Seed(s)
+  static fromString(s: string): Result<Seed> {
+    if (s.trim().length === 0) return err('Seed value must not be empty or whitespace')
+    return ok(new Seed(s))
   }
 }

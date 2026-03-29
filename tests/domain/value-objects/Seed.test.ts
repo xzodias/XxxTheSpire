@@ -3,21 +3,25 @@ import { Seed } from '../../../src/domain/value-objects/Seed'
 
 describe('Seed.create', () => {
   it('文字列からSeedを生成できる', () => {
-    const seed = Seed.create('abc123')
-    expect(seed.value).toBe('abc123')
+    const result = Seed.create('abc123')
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.value.value).toBe('abc123')
   })
 
   it('数値文字列からSeedを生成できる', () => {
-    const seed = Seed.create('12345')
-    expect(seed.value).toBe('12345')
+    const result = Seed.create('12345')
+    expect(result.ok).toBe(true)
   })
 
-  it('空文字列の場合はエラーをスローする', () => {
-    expect(() => Seed.create('')).toThrow()
+  it('空文字列の場合はエラーを返す', () => {
+    const result = Seed.create('')
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toBe('Seed value must not be empty or whitespace')
   })
 
-  it('ホワイトスペースのみの場合はエラーをスローする', () => {
-    expect(() => Seed.create('   ')).toThrow()
+  it('ホワイトスペースのみの場合はエラーを返す', () => {
+    const result = Seed.create('   ')
+    expect(result.ok).toBe(false)
   })
 })
 
@@ -31,7 +35,6 @@ describe('Seed.generate', () => {
 
   it('UUID形式のSeedを生成する', () => {
     const seed = Seed.generate()
-    // crypto.randomUUID() は xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx 形式
     expect(seed.value).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
   })
 
@@ -43,22 +46,27 @@ describe('Seed.generate', () => {
 
 describe('Seed.fromString', () => {
   it('文字列からSeedを復元できる', () => {
-    const seed = Seed.fromString('my-run-seed')
-    expect(seed.value).toBe('my-run-seed')
+    const result = Seed.fromString('my-run-seed')
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.value.value).toBe('my-run-seed')
   })
 
-  it('空文字列の場合はエラーをスローする', () => {
-    expect(() => Seed.fromString('')).toThrow()
+  it('空文字列の場合はエラーを返す', () => {
+    const result = Seed.fromString('')
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toBe('Seed value must not be empty or whitespace')
   })
 
-  it('ホワイトスペースのみの場合はエラーをスローする', () => {
-    expect(() => Seed.fromString('   ')).toThrow()
+  it('ホワイトスペースのみの場合はエラーを返す', () => {
+    const result = Seed.fromString('   ')
+    expect(result.ok).toBe(false)
   })
 })
 
 describe('Seed value immutability', () => {
   it('valueプロパティはreadonlyである', () => {
     const seed = Seed.create('test')
-    expect(seed.value).toBe('test')
+    if (!seed.ok) throw new Error('setup failed')
+    expect(seed.value.value).toBe('test')
   })
 })
