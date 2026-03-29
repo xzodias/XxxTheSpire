@@ -8,6 +8,8 @@ export class Energy {
   }
 
   static create(current: number, max: number): Energy {
+    if (!Number.isFinite(current) || !Number.isFinite(max))
+      throw new Error('values must be finite numbers')
     if (max <= 0) throw new Error('max must be greater than 0')
     if (current < 0) throw new Error('current must be 0 or greater')
     if (current > max) throw new Error('current must not exceed max')
@@ -15,6 +17,8 @@ export class Energy {
   }
 
   spend(cost: number): Energy {
+    if (!Number.isFinite(cost) || cost < 0)
+      throw new Error('cost must be a non-negative finite number')
     if (cost > this.current) throw new Error('Not enough energy')
     return new Energy(this.current - cost, this.max)
   }
@@ -24,6 +28,7 @@ export class Energy {
   }
 
   canAfford(cost: number): boolean {
+    if (!Number.isFinite(cost) || cost < 0) return false
     return cost <= this.current
   }
 }

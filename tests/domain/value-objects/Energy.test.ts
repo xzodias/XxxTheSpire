@@ -30,6 +30,16 @@ describe('Energy.create', () => {
   it('current が max を超える場合はエラーをスローする', () => {
     expect(() => Energy.create(4, 3)).toThrow()
   })
+
+  it('NaN の場合はエラーをスローする', () => {
+    expect(() => Energy.create(NaN, 3)).toThrow()
+    expect(() => Energy.create(3, NaN)).toThrow()
+  })
+
+  it('Infinity の場合はエラーをスローする', () => {
+    expect(() => Energy.create(Infinity, 3)).toThrow()
+    expect(() => Energy.create(3, Infinity)).toThrow()
+  })
 })
 
 describe('Energy#spend', () => {
@@ -55,6 +65,16 @@ describe('Energy#spend', () => {
     const energy = Energy.create(3, 3)
     const result = energy.spend(0)
     expect(result.current).toBe(3)
+  })
+
+  it('負のコストの場合はエラーをスローする', () => {
+    const energy = Energy.create(3, 3)
+    expect(() => energy.spend(-1)).toThrow()
+  })
+
+  it('NaN のコストの場合はエラーをスローする', () => {
+    const energy = Energy.create(3, 3)
+    expect(() => energy.spend(NaN)).toThrow()
   })
 
   it('元のオブジェクトは変更されない（イミュータブル）', () => {
@@ -104,5 +124,15 @@ describe('Energy#canAfford', () => {
   it('コスト 0 は常にtrueを返す', () => {
     const energy = Energy.create(0, 3)
     expect(energy.canAfford(0)).toBe(true)
+  })
+
+  it('負のコストの場合はfalseを返す', () => {
+    const energy = Energy.create(3, 3)
+    expect(energy.canAfford(-1)).toBe(false)
+  })
+
+  it('NaN のコストの場合はfalseを返す', () => {
+    const energy = Energy.create(3, 3)
+    expect(energy.canAfford(NaN)).toBe(false)
   })
 })
