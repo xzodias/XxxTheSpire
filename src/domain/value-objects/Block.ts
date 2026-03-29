@@ -1,3 +1,5 @@
+import { type Result, ok, err } from '../../shared/types'
+
 export class Block {
   readonly value: number
 
@@ -5,10 +7,10 @@ export class Block {
     this.value = value
   }
 
-  static create(value: number): Block {
-    if (!Number.isFinite(value)) throw new Error('Block value must be a finite number')
-    if (value < 0) throw new Error('Block value must be 0 or greater')
-    return new Block(value)
+  static create(value: number): Result<Block> {
+    if (!Number.isFinite(value)) return err('Block value must be a finite number')
+    if (value < 0) return err('Block value must be 0 or greater')
+    return ok(new Block(value))
   }
 
   absorb(damage: number): { block: Block; remainingDamage: number } {
