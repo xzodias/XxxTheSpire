@@ -15,6 +15,14 @@ describe('Gold.create', () => {
   it('負の値の場合はエラーをスローする', () => {
     expect(() => Gold.create(-1)).toThrow()
   })
+
+  it('NaN の場合はエラーをスローする', () => {
+    expect(() => Gold.create(NaN)).toThrow()
+  })
+
+  it('Infinity の場合はエラーをスローする', () => {
+    expect(() => Gold.create(Infinity)).toThrow()
+  })
 })
 
 describe('Gold#add', () => {
@@ -28,6 +36,16 @@ describe('Gold#add', () => {
     const gold = Gold.create(50)
     const result = gold.add(0)
     expect(result.amount).toBe(50)
+  })
+
+  it('負の値の場合はエラーをスローする', () => {
+    const gold = Gold.create(50)
+    expect(() => gold.add(-10)).toThrow()
+  })
+
+  it('NaN の場合はエラーをスローする', () => {
+    const gold = Gold.create(50)
+    expect(() => gold.add(NaN)).toThrow()
   })
 
   it('元のオブジェクトは変更されない（イミュータブル）', () => {
@@ -61,6 +79,16 @@ describe('Gold#spend', () => {
     expect(result.amount).toBe(50)
   })
 
+  it('負の値の場合はエラーをスローする', () => {
+    const gold = Gold.create(100)
+    expect(() => gold.spend(-10)).toThrow()
+  })
+
+  it('NaN の場合はエラーをスローする', () => {
+    const gold = Gold.create(100)
+    expect(() => gold.spend(NaN)).toThrow()
+  })
+
   it('元のオブジェクトは変更されない（イミュータブル）', () => {
     const gold = Gold.create(100)
     gold.spend(30)
@@ -87,5 +115,15 @@ describe('Gold#canAfford', () => {
   it('価格 0 は常にtrueを返す', () => {
     const gold = Gold.create(0)
     expect(gold.canAfford(0)).toBe(true)
+  })
+
+  it('負の価格の場合はfalseを返す', () => {
+    const gold = Gold.create(100)
+    expect(gold.canAfford(-1)).toBe(false)
+  })
+
+  it('NaN の場合はfalseを返す', () => {
+    const gold = Gold.create(100)
+    expect(gold.canAfford(NaN)).toBe(false)
   })
 })
