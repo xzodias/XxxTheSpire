@@ -1,0 +1,42 @@
+[
+  {
+    "id": "strike_r",
+    "name": "Strike",
+    "description": "Deal 6 damage.",
+    "cost": 1,
+    "card_type": "Attack",
+    "rarity": "Common",
+    "target_type": "Single",
+    "effects": [
+      { "type": "damage", "value": 6, "target": "single_enemy" }
+    ],
+    "upgraded": false
+  },
+  {
+    "id": "defend_r",
+    "name": "Defend",
+    "description": "Gain 5 Block.",
+    "cost": 1,
+    "card_type": "Skill",
+    "rarity": "Common",
+    "target_type": "Self",
+    "effects": [
+      { "type": "block", "value": 5, "target": "self" }
+    ],
+    "upgraded": false
+  },
+  {
+    "id": "bash",
+    "name": "Bash",
+    "description": "Deal 8 damage. Apply 2 Vulnerable.",
+    "cost": 2,
+    "card_type": "Attack",
+    "rarity": "Common",
+    "target_type": "Single",
+    "effects": [
+      { "type": "damage", "value": 8, "target": "single_enemy" },
+      { "type": "vulnerable", "value": 2, "target": "single_enemy" }
+    ],
+    "upgraded": false
+  }
+]
