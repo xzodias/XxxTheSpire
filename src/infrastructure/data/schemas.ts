@@ -29,9 +29,9 @@ export type EffectDefRaw = z.infer<typeof EffectDefSchema>
  * 自動的にスキーマも追従し、列挙値のドリフトを防ぐ。
  */
 export const CardSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string(),
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1),
   // コスト上限は設けない（X コスト等で大きな値になる可能性がある）
   cost: z.number().int().min(0),
   card_type: z.nativeEnum(CardType),
