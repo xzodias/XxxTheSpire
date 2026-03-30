@@ -10,6 +10,8 @@ export type NodeId = string & { readonly _brand: 'NodeId' }
 export type EffectId = string & { readonly _brand: 'EffectId' }
 // StatusEffectId: Strength, Vulnerable, Weak, Poison 等の持続型状態効果（T12）
 export type StatusEffectId = string & { readonly _brand: 'StatusEffectId' }
+// PowerId: 筋力・アーティファクト等のパワー識別子（T16）
+export type PowerId = string & { readonly _brand: 'PowerId' }
 
 // --- Effect definition ---
 // Data structure representing a card effect as stored in JSON/Card entity.
