@@ -1,0 +1,57 @@
+import { type StatusEffectId } from '../../shared/types'
+
+/**
+ * 状態効果種別
+ *
+ * - strength    : 筋力（攻撃力増加、スタック型）
+ * - artifact    : アーティファクト（デバフ無効化、スタック型）
+ * - vulnerable  : 脆弱（被ダメージ増加、持続ターン型）
+ * - weak        : 縛り（攻撃力減少、持続ターン型）
+ * - poison      : 毒（ターン開始時ダメージ、スタック型）
+ * - burn        : 燃焼（ターン終了時ダメージ、スタック型）
+ */
+export const StatusEffectType = {
+  Strength: 'Strength',
+  Artifact: 'Artifact',
+  Vulnerable: 'Vulnerable',
+  Weak: 'Weak',
+  Poison: 'Poison',
+  Burn: 'Burn',
+} as const
+
+export type StatusEffectType = (typeof StatusEffectType)[keyof typeof StatusEffectType]
+
+/**
+ * スタック型状態効果（stacks が意味を持ち、duration は使わない）
+ */
+export const StackingStatusEffectTypes: readonly StatusEffectType[] = [
+  StatusEffectType.Strength,
+  StatusEffectType.Artifact,
+  StatusEffectType.Poison,
+  StatusEffectType.Burn,
+] as const
+
+/**
+ * 持続ターン型状態効果（duration が意味を持ち、stacks は使わない）
+ */
+export const DurationStatusEffectTypes: readonly StatusEffectType[] = [
+  StatusEffectType.Vulnerable,
+  StatusEffectType.Weak,
+] as const
+
+/**
+ * 状態効果エンティティ
+ *
+ * バフ・デバフを表す。スタック型と持続ターン型の2種が存在する。
+ * - スタック型  : stacks が効果量を表す（duration は 0）
+ * - 持続ターン型: duration が残りターン数を表す（stacks は 0）
+ *
+ * 参照可能な層: shared/types のみ
+ */
+export interface StatusEffect {
+  readonly id: StatusEffectId
+  readonly name: string
+  readonly type: StatusEffectType
+  readonly stacks: number
+  readonly duration: number
+}
