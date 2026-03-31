@@ -64,9 +64,9 @@ export type EnemyRaw = z.infer<typeof EnemySchema>
  * レリックマスターデータのJSONraw形状。
  */
 export const RelicSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string(),
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1),
   rarity: z.nativeEnum(Rarity),
 })
 
