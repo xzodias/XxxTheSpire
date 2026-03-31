@@ -27,5 +27,14 @@ export default tseslint.config(
       react: { version: 'detect' },
     },
   },
+  {                                                                                                         
+    extends: [...tseslint.configs.recommended],                                                             
+    files: ['tests/**/*.ts'],                                                                               
+    rules: {                                                                                                
+      '@typescript-eslint/no-explicit-any': 'error',                                                        
+      'no-shadow': 'off',                                                                                   
+      '@typescript-eslint/no-shadow': 'error',                                                              
+    },                                                                                                      
+  },                                                                                                        
   prettierConfig,
 )
