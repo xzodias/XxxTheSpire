@@ -1,8 +1,16 @@
 import { describe, it, expect } from 'vitest'
 import { generateMap } from '../../../src/domain/rules/MapGenerator'
 import { NodeType } from '../../../src/domain/enums/NodeType'
+import { Seed } from '../../../src/domain/value-objects/Seed'
 
-const SEED = 'test-seed-42'
+// テスト用シードヘルパー（Seed.create の Result アンラップを一元化）
+function makeSeed(value: string): Seed {
+  const result = Seed.create(value)
+  if (!result.ok) throw new Error(`Invalid seed: ${result.error}`)
+  return result.value
+}
+
+const SEED = makeSeed('test-seed-42')
 const FLOORS = 15
 const WIDTH = 3
 
@@ -33,7 +41,7 @@ describe('generateMap - return shape', () => {
 
   it('every node has a unique id', () => {
     const map = generateMap(SEED, FLOORS, WIDTH)
-    const ids = map.flat().map(n => n.id)
+    const ids = map.flat().map((n) => n.id)
     expect(new Set(ids).size).toBe(ids.length)
   })
 
@@ -114,7 +122,7 @@ describe('generateMap - floor constraints', () => {
   it('Elite and Rest never appear on floor 0', () => {
     // Run many times to be statistically confident
     for (let i = 0; i < 20; i++) {
-      const map = generateMap(`seed-${i}`, FLOORS, WIDTH)
+      const map = generateMap(makeSeed(`seed-${i}`), FLOORS, WIDTH)
       for (const node of map[0]!) {
         expect(node.type).not.toBe(NodeType.Elite)
         expect(node.type).not.toBe(NodeType.Rest)
@@ -137,7 +145,7 @@ describe('generateMap - node types', () => {
 
   it('a large map contains non-Combat variety', () => {
     const map = generateMap(SEED, 15, 4)
-    const types = map.flat().map(n => n.type)
+    const types = map.flat().map((n) => n.type)
     const unique = new Set(types)
     expect(unique.size).toBeGreaterThan(1)
   })
@@ -159,7 +167,7 @@ describe('generateMap - connectivity', () => {
   it('all connections reference valid NodeIds on the next floor', () => {
     const map = generateMap(SEED, FLOORS, WIDTH)
     for (let f = 0; f < FLOORS - 1; f++) {
-      const nextIds = new Set(map[f + 1]!.map(n => n.id))
+      const nextIds = new Set(map[f + 1]!.map((n) => n.id))
       for (const node of map[f]!) {
         for (const connId of node.connections) {
           expect(nextIds.has(connId)).toBe(true)
@@ -210,8 +218,8 @@ describe('generateMap - no crossing connections', () => {
 
       for (let c1 = 0; c1 < currentFloor.length; c1++) {
         for (let c2 = c1 + 1; c2 < currentFloor.length; c2++) {
-          const conns1 = currentFloor[c1]!.connections.map(id => nextIdToIndex.get(id)!)
-          const conns2 = currentFloor[c2]!.connections.map(id => nextIdToIndex.get(id)!)
+          const conns1 = currentFloor[c1]!.connections.map((id) => nextIdToIndex.get(id)!)
+          const conns2 = currentFloor[c2]!.connections.map((id) => nextIdToIndex.get(id)!)
           // c1 is left of c2, so all targets from c1 must be <= all targets from c2
           for (const n1 of conns1) {
             for (const n2 of conns2) {
@@ -237,7 +245,7 @@ describe('generateMap - no crossing connections', () => {
 
   it('no connections cross with multiple seeds', () => {
     for (let i = 0; i < 10; i++) {
-      checkNoCrossings(generateMap(`cross-seed-${i}`, 10, 4))
+      checkNoCrossings(generateMap(makeSeed(`cross-seed-${i}`), 10, 4))
     }
   })
 })
@@ -253,10 +261,16 @@ describe('generateMap - determinism', () => {
   })
 
   it('different seeds produce different maps', () => {
-    const map1 = generateMap('alpha-seed', FLOORS, WIDTH)
-    const map2 = generateMap('beta-seed', FLOORS, WIDTH)
-    const types1 = map1.flat().map(n => n.type).join(',')
-    const types2 = map2.flat().map(n => n.type).join(',')
+    const map1 = generateMap(makeSeed('alpha-seed'), FLOORS, WIDTH)
+    const map2 = generateMap(makeSeed('beta-seed'), FLOORS, WIDTH)
+    const types1 = map1
+      .flat()
+      .map((n) => n.type)
+      .join(',')
+    const types2 = map2
+      .flat()
+      .map((n) => n.type)
+      .join(',')
     expect(types1).not.toBe(types2)
   })
 

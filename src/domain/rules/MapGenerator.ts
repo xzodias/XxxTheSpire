@@ -1,5 +1,6 @@
 import type { MapNode } from '../entities/MapNode'
 import { NodeType } from '../enums/NodeType'
+import type { Seed } from '../value-objects/Seed'
 import type { NodeId } from '../../shared/types'
 
 /**
@@ -95,18 +96,18 @@ function wouldCross(conns: number[][], nodeCol: number, targetCol: number): bool
 /**
  * Slay the Spire風マップグラフを生成する純粋関数。
  *
- * @param seed - 乱数シード文字列（同じシードは同じマップを生成）
+ * @param seed - 乱数シード（同じシードは同じマップを生成）
  * @param floors - フロア総数（ボスフロアを含む）。最小2。
  * @param width - 1フロアあたりの最大ノード数（ボスフロアを除く）
  * @returns floors 要素の MapNode[][] 配列。
  *          最初のフロアは Combat のみ、最後のフロアは単一の Boss ノード。
  *
  * @remarks
- * **参照可能な層**: domain/entities, domain/enums, shared/types のみ
+ * **参照可能な層**: domain/entities, domain/enums, domain/value-objects, shared/types のみ
  * application / infrastructure / presentation には依存しない。
  */
-export function generateMap(seed: string, floors: number, width: number): MapNode[][] {
-  const rng = createPrng(seed)
+export function generateMap(seed: Seed, floors: number, width: number): MapNode[][] {
+  const rng = createPrng(seed.value)
   let nodeCounter = 0
   const makeId = (): NodeId => `node-${nodeCounter++}` as NodeId
 
@@ -182,7 +183,7 @@ export function generateMap(seed: string, floors: number, width: number): MapNod
     if (reachable.size !== nextCount) {
       throw new Error(
         `[MapGenerator] 不変条件違反: floor ${f} -> ${f + 1} にて ` +
-          `${nextCount - reachable.size} 個の次フロアノードが到達不可能 (seed="${seed}")`,
+          `${nextCount - reachable.size} 個の次フロアノードが到達不可能 (seed="${seed.value}")`,
       )
     }
 
