@@ -3,7 +3,7 @@ import { Rarity } from '../../domain/enums/Rarity'
 import { type IRelicRepository } from '../../domain/interfaces/IRelicRepository'
 import { type RelicId } from '../../shared/types'
 import { RelicSchema, type RelicRaw } from '../data/schemas'
-import ironcladRelics from '../data/relics/ironclad.json'
+import ironcladRelics from '../data/relics.json'
 
 /**
  * RelicRaw（snake_case）→ Relic へのマッパー
