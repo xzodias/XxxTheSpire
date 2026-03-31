@@ -1,0 +1,38 @@
+[
+  {
+    "id": "akabeko",
+    "name": "Akabeko",
+    "description": "Your first Attack each combat deals 8 additional damage.",
+    "rarity": "Common"
+  },
+  {
+    "id": "bag_of_preparation",
+    "name": "Bag of Preparation",
+    "description": "At the start of each combat, draw 2 additional cards.",
+    "rarity": "Common"
+  },
+  {
+    "id": "vajra",
+    "name": "Vajra",
+    "description": "At the start of each combat, gain 1 Strength.",
+    "rarity": "Common"
+  },
+  {
+    "id": "centennial_puzzle",
+    "name": "Centennial Puzzle",
+    "description": "The first time you lose HP each combat, draw 3 cards.",
+    "rarity": "Uncommon"
+  },
+  {
+    "id": "darkstone_periapt",
+    "name": "Darkstone Periapt",
+    "description": "Whenever you obtain a Curse, increase your Max HP by 6.",
+    "rarity": "Uncommon"
+  },
+  {
+    "id": "gremlin_horn",
+    "name": "Gremlin Horn",
+    "description": "Whenever an enemy dies, gain 1 Energy and draw 1 card.",
+    "rarity": "Rare"
+  }
+]
