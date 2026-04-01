@@ -30,8 +30,8 @@ export type EventMap = {
 
 // --- EventBus ---
 
-type Handler<T> = (payload: T) => void
-type Unsubscribe = () => void
+export type Handler<T> = (payload: T) => void
+export type Unsubscribe = () => void
 
 export class EventBusImpl {
   // TypeScript cannot infer a unified Map value type for discriminated generics.
@@ -57,6 +57,14 @@ export class EventBusImpl {
     }
     set.add(handler)
     return () => this.off(event, handler)
+  }
+
+  once<K extends keyof EventMap>(event: K, handler: Handler<EventMap[K]>): Unsubscribe {
+    const wrapper = (payload: EventMap[K]) => {
+      handler(payload)
+      this.off(event, wrapper)
+    }
+    return this.on(event, wrapper)
   }
 
   off<K extends keyof EventMap>(event: K, handler: Handler<EventMap[K]>): void {
