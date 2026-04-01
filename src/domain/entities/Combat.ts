@@ -1,4 +1,3 @@
-import { type CombatPhase } from '../enums/CombatPhase'
 import { type Enemy } from './Enemy'
 import { type Player } from './Player'
 
@@ -12,12 +11,12 @@ import { type Player } from './Player'
  *   Power（筋力・アーティファクト等）は Player および Enemy 各自の
  *   powers: readonly ActivePower[] プロパティとして保持する。
  * - turn は 1 始まりのターン数を表す
+ * - phase は application 層の CombatSession が保持する（domain はフェーズ管理に関与しない）
  *
- * 参照可能な層: domain/entities, domain/enums のみ
+ * 参照可能な層: domain/entities のみ
  */
 export interface Combat {
   readonly player: Player
   readonly enemies: readonly Enemy[]
   readonly turn: number
-  readonly phase: CombatPhase
 }
