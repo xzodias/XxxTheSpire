@@ -9,9 +9,9 @@ import { LocalStorageSaveRepository } from '../infrastructure/repositories/Local
 import { SeededRandomService } from '../infrastructure/services/SeededRandomService'
 import { StartRunUseCase } from '../application/usecases/StartRunUseCase'
 
-// NOTE: StartRunUseCase は具象クラス型で公開している（IStartRunUseCase インターフェース化は不要）。
+// NOTE: StartRunUseCase は具象クラス型で公開している（IStartRunUseCase インターフェース化は意図的に省略）。
 // UseCase はリポジトリと異なり実装の差し替え需要がなく、テストは UseCase 単体にモック依存を渡す形で行う。
-// この設計判断は意識的なもの（architect レビュー承認済み）。
+// 他の依存がインターフェース型である点との非対称は認識済みの意識的な設計判断。
 
 /**
  * DIコンテナの型定義
@@ -24,7 +24,7 @@ export type Container = {
   readonly cardRepository: ICardRepository
   readonly relicRepository: IRelicRepository
   readonly saveRepository: ISaveRepository
-  readonly startRunUseCase: StartRunUseCase // 具象クラス型（意識的設計。上記 NOTE 参照）
+  readonly startRunUseCase: StartRunUseCase // 具象クラス型（意識的設計。上記 NOTE 参照）。
 }
 
 /**
