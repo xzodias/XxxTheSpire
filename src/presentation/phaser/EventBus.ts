@@ -2,15 +2,25 @@ import type { CardId, EnemyId } from '../../shared/types'
 
 // --- Event payload types ---
 
-export type PlayCardPayload = {
+// React → Phaser: card animation instruction queued in Phaser
+export type PlayCardAnimationPayload = {
   readonly cardId: CardId
-  readonly targetIndex?: number
+  readonly targetId: EnemyId | string
+  readonly animationType: string
 }
 
-export type AnimationCompletePayload = {
-  readonly animationKey: string
+// React → Phaser: combat effect request (damage flash, block, etc.)
+export type CombatEffectRequestPayload = {
+  readonly effectType: string
+  readonly targetId: EnemyId | string
 }
 
+// Phaser internal: card animation completed (for queue management)
+export type CardAnimationCompletePayload = {
+  readonly cardId: CardId
+}
+
+// React ↔ Phaser: combat scene lifecycle
 export type CombatStartPayload = {
   readonly enemyId: EnemyId
 }
@@ -20,10 +30,20 @@ export type CombatEndPayload = {
 }
 
 // --- Event map ---
+//
+// Design: 策A（カード操作=React、アニメーション=Phaser）
+//   React → Phaser : playCardAnimation, combatEffectRequest
+//   Phaser internal: cardAnimationComplete（queue management; not used for VM input control）
+//   React ↔ Phaser : combatStart, combatEnd（scene lifecycle）
 
 export type EventMap = {
-  playCard: PlayCardPayload
-  animationComplete: AnimationCompletePayload
+  // React → Phaser: play card animation with type info
+  playCardAnimation: PlayCardAnimationPayload
+  // React → Phaser: request a combat effect (damage, block, etc.)
+  combatEffectRequest: CombatEffectRequestPayload
+  // Phaser internal: notifies that a card animation finished
+  cardAnimationComplete: CardAnimationCompletePayload
+  // Scene lifecycle
   combatStart: CombatStartPayload
   combatEnd: CombatEndPayload
 }
