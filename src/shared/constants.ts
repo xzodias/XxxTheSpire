@@ -1,3 +1,5 @@
+import { type CardId } from './types'
+
 // Hand & Deck
 export const MAX_HAND_SIZE = 10
 export const STARTING_DRAW_COUNT = 5
@@ -11,6 +13,21 @@ export const MAX_ENERGY = 3
 
 // HP
 export const MAX_HP_CAP = 999
+
+// Character starting HP
+// TODO: T111 CharacterRepository 実装後、この定数を削除して ICharacterRepository 経由に移行する。
+export const IRONCLAD_STARTING_HP = 80
+
+// Ironclad starting deck definition (card id → count)
+// TODO: T111 CharacterRepository 実装後、この定数を削除して ICharacterRepository 経由に移行する。
+export const IRONCLAD_STARTING_DECK: ReadonlyArray<{
+  readonly id: CardId
+  readonly count: number
+}> = [
+  { id: 'strike_r' as CardId, count: 5 },
+  { id: 'defend_r' as CardId, count: 4 },
+  { id: 'bash' as CardId, count: 1 },
+]
 
 // Gold
 export const STARTING_GOLD = 99
