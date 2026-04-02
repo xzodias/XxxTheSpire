@@ -52,3 +52,7 @@ export const SHOP_REMOVE_COST = 75
 
 // Rest Site
 export const REST_HEAL_PERCENT = 0.3
+
+// Phaser
+export const PHASER_BACKGROUND_COLOR = '#1a1a2e'
+export const PHASER_CANVAS_Z_INDEX = 5
