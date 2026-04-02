@@ -13,6 +13,15 @@ export type StatusEffectId = string & { readonly _brand: 'StatusEffectId' }
 // PowerId: 筋力・アーティファクト等のパワー識別子（T16）
 export type PowerId = string & { readonly _brand: 'PowerId' }
 
+// --- Target (discriminated union) ---
+// Represents the runtime target of an animation or effect.
+// Distinct from TargetType (domain enum for card metadata) — this is a concrete runtime value.
+// Used in EventBus payloads (presentation) and may be used in EffectDef (domain) in the future.
+export type Target =
+  | { readonly kind: 'enemy'; readonly id: EnemyId }
+  | { readonly kind: 'player' }
+  | { readonly kind: 'all' }
+
 // --- Effect definition ---
 // Data structure representing a card effect as stored in JSON/Card entity.
 // Consumed by EffectFactory (application layer) to build executable Effect objects.
