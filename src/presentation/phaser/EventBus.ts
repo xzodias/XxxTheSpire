@@ -1,4 +1,4 @@
-import type { CardId, EnemyId, Target } from '../../shared/types'
+import type { CardId, EnemyId, NodeId, Target } from '../../shared/types'
 
 // --- Event payload types ---
 
@@ -34,12 +34,38 @@ export type CombatEndPayload = {
   readonly playerWon: boolean
 }
 
+// React → Phaser: map node data for rendering.
+// Includes column position (index within the floor) alongside MapNode fields,
+// since MapNode itself does not carry layout information.
+export type MapNodeRenderData = {
+  readonly id: NodeId
+  // NodeType value as a string to avoid importing domain enums into the presentation bus.
+  readonly type: string
+  readonly floor: number
+  readonly column: number
+  readonly connections: readonly NodeId[]
+  readonly visited: boolean
+}
+
+// React → Phaser: full map state update for MapScene to render.
+export type MapUpdatePayload = {
+  readonly nodes: readonly MapNodeRenderData[]
+  readonly currentNodeId: NodeId | null
+  readonly selectableNodeIds: readonly NodeId[]
+}
+
+// React → Phaser: notify MapScene which node the player selected (for visual highlight).
+export type NodeSelectedPayload = {
+  readonly nodeId: NodeId
+}
+
 // --- Event map ---
 //
 // Design: 策A（カード操作=React、アニメーション=Phaser）
 //   React → Phaser : playCardAnimation, combatEffectRequest
 //   Phaser internal: cardAnimationComplete（queue management; not used for VM input control）
 //   React ↔ Phaser : combatStart, combatEnd（scene lifecycle）
+//   React → Phaser : mapUpdate, nodeSelected（map scene rendering）
 
 export type EventMap = {
   // React → Phaser: play card animation with type info
@@ -51,6 +77,9 @@ export type EventMap = {
   // Scene lifecycle
   combatStart: CombatStartPayload
   combatEnd: CombatEndPayload
+  // Map scene rendering
+  mapUpdate: MapUpdatePayload
+  nodeSelected: NodeSelectedPayload
 }
 
 // --- EventBus ---
