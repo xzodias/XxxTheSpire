@@ -8,6 +8,7 @@ import {
 } from '../EventBus'
 import { NodeType } from '../../../shared/types'
 import type { NodeId } from '../../../shared/types'
+import { SceneKey } from '../../../shared/constants'
 
 /**
  * MapScene — マップ描画シーン
@@ -76,7 +77,7 @@ export class MapScene extends Phaser.Scene {
   private unsubNodeSelected: Unsubscribe | null = null
 
   constructor() {
-    super({ key: 'MapScene' })
+    super({ key: SceneKey.Map })
   }
 
   create(): void {
@@ -87,7 +88,7 @@ export class MapScene extends Phaser.Scene {
 
     this.unsubMapUpdate = EventBus.on('mapUpdate', (payload) => {
       // Guard: discard stale events delivered after the scene was stopped or destroyed.
-      if (!this.scene.isActive('MapScene')) return
+      if (!this.scene.isActive(SceneKey.Map)) return
       this.currentPayload = payload
       // Reset selection when new map data arrives; the previous NodeId may not exist in the
       // new payload (e.g. floor transition) and would cause a stale highlight.
@@ -96,7 +97,7 @@ export class MapScene extends Phaser.Scene {
     })
 
     this.unsubNodeSelected = EventBus.on('nodeSelected', (payload) => {
-      if (!this.scene.isActive('MapScene')) return
+      if (!this.scene.isActive(SceneKey.Map)) return
       this.selectedNodeId = payload.nodeId
       this.renderMap()
     })

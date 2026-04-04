@@ -6,6 +6,7 @@ import type { MapNode } from '../../domain/entities/MapNode'
 import { Seed } from '../../domain/value-objects/Seed'
 import { ScreenType } from '../../shared/types/ScreenType'
 import { createContainer } from '../../di/container'
+import { useMapViewModel } from './useMapViewModel'
 
 /**
  * ランViewModel — ゲーム全体の状態を管理するZustandストア
@@ -28,6 +29,7 @@ interface RunState {
   readonly isStarting: boolean
   startRun: (characterId: string) => void
   navigateTo: (screen: ScreenType) => void
+  clearError: () => void
 }
 
 export const useRunViewModel = create<RunState>()(
@@ -50,6 +52,7 @@ export const useRunViewModel = create<RunState>()(
       const result = container.startRunUseCase.execute(characterId, seed)
 
       if (result.ok) {
+        useMapViewModel.getState().initialize(result.value.map)
         set((draft) => {
           draft.player = castDraft(result.value.player)
           draft.map = castDraft(result.value.map)
@@ -67,6 +70,12 @@ export const useRunViewModel = create<RunState>()(
     navigateTo: (screen: ScreenType) => {
       set((draft) => {
         draft.currentScreen = screen
+      })
+    },
+
+    clearError: () => {
+      set((draft) => {
+        draft.startRunError = null
       })
     },
   })),

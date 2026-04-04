@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { SceneKey } from '../../../shared/constants'
 
 /**
  * BootScene — アセットプリロードシーン
@@ -23,9 +24,8 @@ export class BootScene extends Phaser.Scene {
   private progressBox: Phaser.GameObjects.Graphics | null = null
   private loadingText: Phaser.GameObjects.Text | null = null
 
-  // TODO: SceneKey 定数が定義されたら 'MainMenuScene' をその値に置き換える。
-  constructor(nextScene = 'MainMenuScene') {
-    super({ key: 'BootScene' })
+  constructor(nextScene: string = SceneKey.Map) {
+    super({ key: SceneKey.Boot })
     this.nextScene = nextScene
   }
 
