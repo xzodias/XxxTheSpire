@@ -1,4 +1,4 @@
-import type { CardId, EnemyId, NodeId, Target } from '../../shared/types'
+import type { CardId, EnemyId, NodeId, NodeType, Target } from '../../shared/types'
 
 // --- Event payload types ---
 
@@ -39,8 +39,8 @@ export type CombatEndPayload = {
 // since MapNode itself does not carry layout information.
 export type MapNodeRenderData = {
   readonly id: NodeId
-  // NodeType value as a string to avoid importing domain enums into the presentation bus.
-  readonly type: string
+  // NodeType is defined in shared/types (no domain dependency) so it can be used safely here.
+  readonly type: NodeType
   readonly floor: number
   readonly column: number
   readonly connections: readonly NodeId[]

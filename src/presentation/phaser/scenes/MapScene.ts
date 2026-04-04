@@ -6,6 +6,7 @@ import {
   type MapUpdatePayload,
   type Unsubscribe,
 } from '../EventBus'
+import { NodeType } from '../../../shared/types'
 import type { NodeId } from '../../../shared/types'
 
 /**
@@ -29,27 +30,24 @@ const NODE_RADIUS = 18
 const NODE_LABEL_OFFSET_Y = NODE_RADIUS + 8
 
 // ---- ノード種別ごとの表示色 ----
-// NodeType の string 値をキーとする。EventBus ペイロードは string で渡される。
-// TODO: NodeType を shared/types に移動して型安全性を高めることを検討する。
-// Tracked in: #67 MapScene（マップ描画シーン）
-const NODE_FILL_COLOR: Record<string, number> = {
-  Combat: 0x888888,
-  Elite: 0xaa44cc,
-  Event: 0x4488cc,
-  Shop: 0xddaa00,
-  Rest: 0x44aa66,
-  Boss: 0xcc3333,
+// NodeType は shared/types で定義されているため、型安全に Record のキーとして使用できる。
+const NODE_FILL_COLOR: Record<NodeType, number> = {
+  [NodeType.Combat]: 0x888888,
+  [NodeType.Elite]: 0xaa44cc,
+  [NodeType.Event]: 0x4488cc,
+  [NodeType.Shop]: 0xddaa00,
+  [NodeType.Rest]: 0x44aa66,
+  [NodeType.Boss]: 0xcc3333,
 }
-const NODE_FILL_COLOR_FALLBACK = 0x666666
 
 // ---- ノード種別ごとの略称ラベル ----
-const NODE_TYPE_LABEL: Record<string, string> = {
-  Combat: 'CMB',
-  Elite: 'ELT',
-  Event: 'EVT',
-  Shop: 'SHP',
-  Rest: 'RST',
-  Boss: 'BSS',
+const NODE_TYPE_LABEL: Record<NodeType, string> = {
+  [NodeType.Combat]: 'CMB',
+  [NodeType.Elite]: 'ELT',
+  [NodeType.Event]: 'EVT',
+  [NodeType.Shop]: 'SHP',
+  [NodeType.Rest]: 'RST',
+  [NodeType.Boss]: 'BSS',
 }
 
 // ---- ビジュアル定数 ----
@@ -184,7 +182,7 @@ export class MapScene extends Phaser.Scene {
       const isSelectable = selectableSet.has(node.id)
       const isActive = node.visited || isCurrent || isSelectable
       const fillAlpha = isActive ? ALPHA_ACTIVE : ALPHA_INACTIVE
-      const fillColor = NODE_FILL_COLOR[node.type] ?? NODE_FILL_COLOR_FALLBACK
+      const fillColor = NODE_FILL_COLOR[node.type]
 
       // Outer ring for current / selected node
       if (isCurrent || isSelected) {
@@ -204,7 +202,7 @@ export class MapScene extends Phaser.Scene {
       this.nodeGraphics?.fillCircle(pos.x, pos.y, NODE_RADIUS)
 
       // Node type label (Text object lifetime managed by labelGroup)
-      const labelText = NODE_TYPE_LABEL[node.type] ?? node.type
+      const labelText = NODE_TYPE_LABEL[node.type]
       const label = this.add
         .text(pos.x, pos.y + NODE_LABEL_OFFSET_Y, labelText, {
           fontSize: '10px',
