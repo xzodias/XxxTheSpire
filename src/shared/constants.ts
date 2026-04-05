@@ -56,3 +56,10 @@ export const REST_HEAL_PERCENT = 0.3
 // Phaser
 export const PHASER_BACKGROUND_COLOR = '#1a1a2e'
 export const PHASER_CANVAS_Z_INDEX = 5
+
+// Scene keys — Phaser シーンのキー定数
+export const SceneKey = {
+  Boot: 'BootScene',
+  Map: 'MapScene',
+} as const
+export type SceneKey = (typeof SceneKey)[keyof typeof SceneKey]
