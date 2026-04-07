@@ -27,8 +27,12 @@ interface MapState {
   readonly selectableNodeIds: readonly NodeId[]
   /** selectNode失敗時のエラー。成功時・未実行時は null */
   readonly selectNodeError: SelectNodeError | null
-  initialize: (map: ReadonlyArray<ReadonlyArray<MapNode>>, currentNodeId?: NodeId | null) => void
-  selectNode: (targetNodeId: NodeId) => void
+  readonly initialize: (
+    map: ReadonlyArray<ReadonlyArray<MapNode>>,
+    currentNodeId?: NodeId | null,
+  ) => void
+  readonly reset: () => void
+  readonly selectNode: (targetNodeId: NodeId) => void
 }
 
 export const useMapViewModel = create<MapState>()(
@@ -46,6 +50,15 @@ export const useMapViewModel = create<MapState>()(
         draft.map = castDraft(map)
         draft.currentNodeId = currentNodeId
         draft.selectableNodeIds = castDraft(computeSelectableNodeIds(map, currentNodeId))
+        draft.selectNodeError = null
+      })
+    },
+
+    reset: () => {
+      set((draft) => {
+        draft.map = null
+        draft.currentNodeId = null
+        draft.selectableNodeIds = []
         draft.selectNodeError = null
       })
     },
