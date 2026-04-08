@@ -3,6 +3,7 @@
 // Usage: `const id = 'strike' as CardId`
 
 export type CardId = string & { readonly _brand: 'CardId' }
+export type CharacterId = string & { readonly _brand: 'CharacterId' }
 export type RelicId = string & { readonly _brand: 'RelicId' }
 export type PotionId = string & { readonly _brand: 'PotionId' }
 export type EnemyId = string & { readonly _brand: 'EnemyId' }

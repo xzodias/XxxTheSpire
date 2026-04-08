@@ -61,7 +61,7 @@ export class JsonCardRepository implements ICardRepository {
     })
   }
 
-  findById(id: string): Card | undefined {
+  findById(id: CardId): Card | undefined {
     return this.cards.find((card) => card.id === id)
   }
 
