@@ -44,17 +44,39 @@ export const CardSchema = z.object({
 export type CardRaw = z.infer<typeof CardSchema>
 
 /**
+ * 敵インテントのraw形状スキーマ
+ *
+ * 敵キャラクターが実行しうる行動パターンのJSONraw形状。
+ * type は IntentType に対応する文字列リテラル。
+ */
+export const EnemyIntentSchema = z.object({
+  type: z.enum(['attack', 'block', 'buff', 'debuff', 'unknown']),
+  value: z.number().optional(),
+})
+
+export type EnemyIntentRaw = z.infer<typeof EnemyIntentSchema>
+
+/**
  * 敵JSONのraw形状スキーマ
  *
  * 敵マスターデータのJSONraw形状。
- * 現在は最小限のフィールドのみ定義（壊れ検知の目的に限定）。
- * 敵のアクション・インテント等は敵リポジトリ実装時に追加する。
+ * - id: パース時に EnemyId ブランド型へ変換する（データ境界でのキャストを一元化）
+ * - hp_min / hp_max: 戦闘開始時の初期HP範囲（両端含む正の整数）
+ * - intents: 敵が実行しうる行動パターンのリスト（1件以上必須）
+ * - refine: hp_min <= hp_max のクロスフィールド制約
  */
-export const EnemySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  max_hp: z.number().int().positive(),
-})
+export const EnemySchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    hp_min: z.number().int().positive(),
+    hp_max: z.number().int().positive(),
+    intents: z.array(EnemyIntentSchema).min(1),
+  })
+  .refine((d) => d.hp_min <= d.hp_max, {
+    message: 'hp_min は hp_max 以下でなければなりません',
+    path: ['hp_min'],
+  })
 
 export type EnemyRaw = z.infer<typeof EnemySchema>
 

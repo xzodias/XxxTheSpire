@@ -1,0 +1,21 @@
+[
+  {
+    "id": "slime",
+    "name": "Slime",
+    "hp_min": 10,
+    "hp_max": 15,
+    "intents": [
+      { "type": "attack", "value": 5 }
+    ]
+  },
+  {
+    "id": "guard",
+    "name": "Guard",
+    "hp_min": 20,
+    "hp_max": 28,
+    "intents": [
+      { "type": "attack", "value": 8 },
+      { "type": "block", "value": 5 }
+    ]
+  }
+]
