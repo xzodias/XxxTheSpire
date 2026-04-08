@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { type GameEvent, type Relic, type StateWithPlayer } from '../../domain/entities/Relic'
 import { Rarity } from '../../domain/enums/Rarity'
 import { type IRelicRepository } from '../../domain/interfaces/IRelicRepository'
@@ -36,11 +37,7 @@ export class JsonRelicRepository implements IRelicRepository {
   private readonly relics: readonly Relic[]
 
   constructor() {
-    const rawRelics = ironcladRelics as unknown[]
-    this.relics = rawRelics.map((raw) => {
-      const parsed = RelicSchema.parse(raw)
-      return toRelicEntity(parsed)
-    })
+    this.relics = z.array(RelicSchema).parse(ironcladRelics).map(toRelicEntity)
   }
 
   findById(id: string): Relic | undefined {

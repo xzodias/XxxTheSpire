@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, assert } from 'vitest'
 import { JsonEventRepository } from '../../../src/infrastructure/repositories/JsonEventRepository'
 import { type EventId } from '../../../src/shared/types'
 
@@ -84,8 +84,7 @@ describe('JsonEventRepository', () => {
     describe('the_cleric のフィールドが正しくマッピングされている', () => {
       it('基本フィールド（name / description）が正しい', () => {
         const event = repository.findById('the_cleric' as EventId)
-        expect(event).toBeDefined()
-        if (!event) return
+        assert(event !== undefined)
 
         expect(event.name).toBe('The Cleric')
         expect(typeof event.description).toBe('string')
@@ -94,49 +93,42 @@ describe('JsonEventRepository', () => {
 
       it('choices が2件である', () => {
         const event = repository.findById('the_cleric' as EventId)
-        expect(event).toBeDefined()
-        if (!event) return
+        assert(event !== undefined)
 
         expect(event.choices).toHaveLength(2)
       })
 
       it('Heal 選択肢の outcome に gain_hp が含まれる', () => {
         const event = repository.findById('the_cleric' as EventId)
-        expect(event).toBeDefined()
-        if (!event) return
+        assert(event !== undefined)
 
         const healChoice = event.choices.find((c) => c.text === 'Heal')
-        expect(healChoice).toBeDefined()
-        if (!healChoice) return
+        assert(healChoice !== undefined)
 
         const gainHpOutcome = healChoice.outcomes.find((o) => o.kind === 'gain_hp')
-        expect(gainHpOutcome).toBeDefined()
-        if (!gainHpOutcome || gainHpOutcome.kind !== 'gain_hp') return
+        assert(gainHpOutcome !== undefined && gainHpOutcome.kind === 'gain_hp')
         expect(typeof gainHpOutcome.value).toBe('number')
         expect(gainHpOutcome.value).toBeGreaterThan(0)
       })
 
       it('Heal 選択肢の outcome に lose_gold が含まれる', () => {
         const event = repository.findById('the_cleric' as EventId)
-        if (!event) return
+        assert(event !== undefined)
 
         const healChoice = event.choices.find((c) => c.text === 'Heal')
-        if (!healChoice) return
+        assert(healChoice !== undefined)
 
         const loseGoldOutcome = healChoice.outcomes.find((o) => o.kind === 'lose_gold')
-        expect(loseGoldOutcome).toBeDefined()
-        if (!loseGoldOutcome || loseGoldOutcome.kind !== 'lose_gold') return
+        assert(loseGoldOutcome !== undefined && loseGoldOutcome.kind === 'lose_gold')
         expect(loseGoldOutcome.value).toBeGreaterThan(0)
       })
 
       it('Leave 選択肢の outcome に nothing が含まれる', () => {
         const event = repository.findById('the_cleric' as EventId)
-        expect(event).toBeDefined()
-        if (!event) return
+        assert(event !== undefined)
 
         const leaveChoice = event.choices.find((c) => c.text === 'Leave')
-        expect(leaveChoice).toBeDefined()
-        if (!leaveChoice) return
+        assert(leaveChoice !== undefined)
 
         const nothingOutcome = leaveChoice.outcomes.find((o) => o.kind === 'nothing')
         expect(nothingOutcome).toBeDefined()
@@ -146,12 +138,10 @@ describe('JsonEventRepository', () => {
     describe('dead_adventurer のフィールドが正しくマッピングされている', () => {
       it('Search Body 選択肢に gain_gold と add_card が含まれる', () => {
         const event = repository.findById('dead_adventurer' as EventId)
-        expect(event).toBeDefined()
-        if (!event) return
+        assert(event !== undefined)
 
         const searchChoice = event.choices.find((c) => c.text === 'Search Body')
-        expect(searchChoice).toBeDefined()
-        if (!searchChoice) return
+        assert(searchChoice !== undefined)
 
         expect(searchChoice.outcomes.some((o) => o.kind === 'gain_gold')).toBe(true)
         expect(searchChoice.outcomes.some((o) => o.kind === 'add_card')).toBe(true)
@@ -159,14 +149,13 @@ describe('JsonEventRepository', () => {
 
       it('add_card の outcome に cardId が含まれる', () => {
         const event = repository.findById('dead_adventurer' as EventId)
-        if (!event) return
+        assert(event !== undefined)
 
         const searchChoice = event.choices.find((c) => c.text === 'Search Body')
-        if (!searchChoice) return
+        assert(searchChoice !== undefined)
 
         const addCardOutcome = searchChoice.outcomes.find((o) => o.kind === 'add_card')
-        expect(addCardOutcome).toBeDefined()
-        if (!addCardOutcome || addCardOutcome.kind !== 'add_card') return
+        assert(addCardOutcome !== undefined && addCardOutcome.kind === 'add_card')
         expect(typeof addCardOutcome.cardId).toBe('string')
         expect(addCardOutcome.cardId.length).toBeGreaterThan(0)
       })
@@ -175,30 +164,26 @@ describe('JsonEventRepository', () => {
     describe('golden_wing のフィールドが正しくマッピングされている', () => {
       it('Take Relic 選択肢に gain_relic が含まれる', () => {
         const event = repository.findById('golden_wing' as EventId)
-        expect(event).toBeDefined()
-        if (!event) return
+        assert(event !== undefined)
 
         const takeRelicChoice = event.choices.find((c) => c.text === 'Take Relic')
-        expect(takeRelicChoice).toBeDefined()
-        if (!takeRelicChoice) return
+        assert(takeRelicChoice !== undefined)
 
         const gainRelicOutcome = takeRelicChoice.outcomes.find((o) => o.kind === 'gain_relic')
-        expect(gainRelicOutcome).toBeDefined()
-        if (!gainRelicOutcome || gainRelicOutcome.kind !== 'gain_relic') return
+        assert(gainRelicOutcome !== undefined && gainRelicOutcome.kind === 'gain_relic')
         expect(typeof gainRelicOutcome.relicId).toBe('string')
         expect(gainRelicOutcome.relicId.length).toBeGreaterThan(0)
       })
 
       it('Take Relic 選択肢に lose_hp が含まれる', () => {
         const event = repository.findById('golden_wing' as EventId)
-        if (!event) return
+        assert(event !== undefined)
 
         const takeRelicChoice = event.choices.find((c) => c.text === 'Take Relic')
-        if (!takeRelicChoice) return
+        assert(takeRelicChoice !== undefined)
 
         const loseHpOutcome = takeRelicChoice.outcomes.find((o) => o.kind === 'lose_hp')
-        expect(loseHpOutcome).toBeDefined()
-        if (!loseHpOutcome || loseHpOutcome.kind !== 'lose_hp') return
+        assert(loseHpOutcome !== undefined && loseHpOutcome.kind === 'lose_hp')
         expect(loseHpOutcome.value).toBeGreaterThan(0)
       })
     })
