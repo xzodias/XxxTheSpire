@@ -1,4 +1,4 @@
-import { type Result, ok, err } from '../../shared/types'
+import { type Result, type CharacterId, ok, err } from '../../shared/types'
 import { Health } from '../../domain/value-objects/Health'
 import { Energy } from '../../domain/value-objects/Energy'
 import { Gold } from '../../domain/value-objects/Gold'
@@ -8,31 +8,28 @@ import { type Player } from '../../domain/entities/Player'
 import { type MapNode } from '../../domain/entities/MapNode'
 import { type Card } from '../../domain/entities/Card'
 import { type ICardRepository } from '../../domain/interfaces/ICardRepository'
+import { type ICharacterRepository } from '../../domain/interfaces/ICharacterRepository'
 import { generateMap } from '../../domain/rules/MapGenerator'
-import {
-  STARTING_ENERGY,
-  MAX_ENERGY,
-  STARTING_GOLD,
-  MAX_POTIONS,
-  MAP_FLOORS_PER_ACT,
-  MAP_WIDTH,
-  IRONCLAD_STARTING_HP,
-  IRONCLAD_STARTING_DECK,
-} from '../../shared/constants'
+import { STARTING_GOLD, MAX_POTIONS, MAP_FLOORS_PER_ACT, MAP_WIDTH } from '../../shared/constants'
 
 export class StartRunUseCase {
-  constructor(private readonly cardRepo: ICardRepository) {}
+  constructor(
+    private readonly cardRepo: ICardRepository,
+    private readonly characterRepo: ICharacterRepository,
+  ) {}
 
-  execute(characterId: string, seed: Seed): Result<{ player: Player; map: MapNode[][] }, string> {
-    // TODO: T111 CharacterRepository 実装後、ICharacterRepository.findById(characterId) に置き換える。
-    // 現在は Ironclad のみ対応（暫定実装）。
-    if (characterId !== 'ironclad') {
+  execute(
+    characterId: CharacterId,
+    seed: Seed,
+  ): Result<{ player: Player; map: MapNode[][] }, string> {
+    const character = this.characterRepo.findById(characterId)
+    if (character === undefined) {
       return err('unknown character')
     }
 
     // Build initial deck
     const deck: Card[] = []
-    for (const { id, count } of IRONCLAD_STARTING_DECK) {
+    for (const { id, count } of character.startingDeck) {
       const card = this.cardRepo.findById(id)
       if (card === undefined) {
         return err(`Card not found: ${id}`)
@@ -43,10 +40,10 @@ export class StartRunUseCase {
     }
 
     // Create value objects
-    const healthResult = Health.create(IRONCLAD_STARTING_HP, IRONCLAD_STARTING_HP)
+    const healthResult = Health.create(character.startingHp, character.startingHp)
     if (!healthResult.ok) return err(healthResult.error)
 
-    const energyResult = Energy.create(STARTING_ENERGY, MAX_ENERGY)
+    const energyResult = Energy.create(character.maxEnergy, character.maxEnergy)
     if (!energyResult.ok) return err(energyResult.error)
 
     const goldResult = Gold.create(STARTING_GOLD)
@@ -57,8 +54,8 @@ export class StartRunUseCase {
 
     // Build player
     const player: Player = {
-      id: 'ironclad',
-      name: 'Ironclad',
+      id: character.id,
+      name: character.name,
       health: healthResult.value,
       energy: energyResult.value,
       gold: goldResult.value,

@@ -4,7 +4,7 @@ import { castDraft } from 'immer'
 import type { Player } from '../../domain/entities/Player'
 import type { MapNode } from '../../domain/entities/MapNode'
 import { Seed } from '../../domain/value-objects/Seed'
-import { ScreenType } from '../../shared/types/ScreenType'
+import { type CharacterId, ScreenType } from '../../shared/types'
 import { createContainer } from '../../di/container'
 
 /**
@@ -71,7 +71,7 @@ export const useRunViewModel = create<RunState>()(
       // NOTE: execute は同期処理を前提としている。
       // 非同期化する場合は isStarting ガードと set() の順序を再設計すること。
       try {
-        const result = container.startRunUseCase.execute(characterId, seed)
+        const result = container.startRunUseCase.execute(characterId as CharacterId, seed)
 
         if (result.ok) {
           set((draft) => {

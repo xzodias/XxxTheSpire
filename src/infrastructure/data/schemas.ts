@@ -88,3 +88,30 @@ export const PotionSchema = z.object({
 })
 
 export type PotionRaw = z.infer<typeof PotionSchema>
+
+/**
+ * スターターデッキエントリのraw形状スキーマ
+ */
+export const StarterDeckEntrySchema = z.object({
+  id: z.string().min(1),
+  count: z.number().int().positive(),
+})
+
+export type StarterDeckEntryRaw = z.infer<typeof StarterDeckEntrySchema>
+
+/**
+ * キャラクターJSONのraw形状スキーマ
+ *
+ * フィールド名はsnake_case（JSONのraw形状）。
+ * ドメイン型のcamelCaseへの変換はリポジトリのマッパー関数で行う。
+ */
+export const CharacterSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  starting_hp: z.number().int().positive(),
+  max_energy: z.number().int().positive(),
+  starting_deck: z.array(StarterDeckEntrySchema).min(1),
+  starting_relic_id: z.string().min(1),
+})
+
+export type CharacterRaw = z.infer<typeof CharacterSchema>

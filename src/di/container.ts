@@ -1,9 +1,11 @@
 import { type ICardRepository } from '../domain/interfaces/ICardRepository'
+import { type ICharacterRepository } from '../domain/interfaces/ICharacterRepository'
 import { type IRandomService } from '../domain/interfaces/IRandomService'
 import { type IRelicRepository } from '../domain/interfaces/IRelicRepository'
 import { type ISaveRepository } from '../domain/interfaces/ISaveRepository'
 import type { Seed } from '../domain/value-objects/Seed'
 import { JsonCardRepository } from '../infrastructure/repositories/JsonCardRepository'
+import { JsonCharacterRepository } from '../infrastructure/repositories/JsonCharacterRepository'
 import { JsonRelicRepository } from '../infrastructure/repositories/JsonRelicRepository'
 import { LocalStorageSaveRepository } from '../infrastructure/repositories/LocalStorageSaveRepository'
 import { SeededRandomService } from '../infrastructure/services/SeededRandomService'
@@ -22,6 +24,7 @@ import { StartRunUseCase } from '../application/usecases/StartRunUseCase'
 export type Container = {
   readonly randomService: IRandomService
   readonly cardRepository: ICardRepository
+  readonly characterRepository: ICharacterRepository
   readonly relicRepository: IRelicRepository
   readonly saveRepository: ISaveRepository
   readonly startRunUseCase: StartRunUseCase // 具象クラス型（意識的設計。上記 NOTE 参照）。
@@ -42,14 +45,16 @@ export type Container = {
 export function createContainer(seed: Seed): Container {
   const randomService = new SeededRandomService(seed)
   const cardRepository = new JsonCardRepository()
+  const characterRepository = new JsonCharacterRepository()
   const relicRepository = new JsonRelicRepository()
   const saveRepository = new LocalStorageSaveRepository()
 
-  const startRunUseCase = new StartRunUseCase(cardRepository)
+  const startRunUseCase = new StartRunUseCase(cardRepository, characterRepository)
 
   return {
     randomService,
     cardRepository,
+    characterRepository,
     relicRepository,
     saveRepository,
     startRunUseCase,

@@ -1,0 +1,11 @@
+{
+  "id": "silent",
+  "name": "Silent",
+  "starting_hp": 70,
+  "max_energy": 3,
+  "starting_deck": [
+    { "id": "strike_g", "count": 6 },
+    { "id": "defend_g", "count": 6 }
+  ],
+  "starting_relic_id": "ring_of_the_snake"
+}

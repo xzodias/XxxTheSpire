@@ -3,6 +3,7 @@ import { JsonCardRepository } from '../../../src/infrastructure/repositories/Jso
 import { CardType } from '../../../src/domain/enums/CardType'
 import { Rarity } from '../../../src/domain/enums/Rarity'
 import { TargetType } from '../../../src/domain/enums/TargetType'
+import { type CardId } from '../../../src/shared/types'
 
 describe('JsonCardRepository', () => {
   // 全テストで同一の read-only リポジトリを共有（毎回パースは不要）
@@ -39,18 +40,20 @@ describe('JsonCardRepository', () => {
       }
     })
 
-    it.todo('target を持たない effect は target フィールドを含まない（target なし effect のデータ追加時に実装）')
+    it.todo(
+      'target を持たない effect は target フィールドを含まない（target なし effect のデータ追加時に実装）',
+    )
   })
 
   describe('findById', () => {
     it('存在するIDでカードを返す', () => {
-      const card = repository.findById('strike_r')
+      const card = repository.findById('strike_r' as CardId)
       expect(card).toBeDefined()
       expect(card?.id).toBe('strike_r')
     })
 
     it('strike_r のフィールドが正しくマッピングされている', () => {
-      const card = repository.findById('strike_r')
+      const card = repository.findById('strike_r' as CardId)
       expect(card).toBeDefined()
       if (!card) return
 
@@ -64,7 +67,7 @@ describe('JsonCardRepository', () => {
     })
 
     it('strike_r の effects が正しくマッピングされている', () => {
-      const card = repository.findById('strike_r')
+      const card = repository.findById('strike_r' as CardId)
       expect(card?.effects).toHaveLength(1)
       expect(card?.effects[0]).toEqual({
         type: 'damage',
@@ -74,19 +77,19 @@ describe('JsonCardRepository', () => {
     })
 
     it('bash の複数エフェクトが正しくマッピングされている', () => {
-      const card = repository.findById('bash')
+      const card = repository.findById('bash' as CardId)
       expect(card?.effects).toHaveLength(2)
       expect(card?.effects[0]).toEqual({ type: 'damage', value: 8, target: 'single_enemy' })
       expect(card?.effects[1]).toEqual({ type: 'vulnerable', value: 2, target: 'single_enemy' })
     })
 
     it('存在しないIDで undefined を返す', () => {
-      const card = repository.findById('nonexistent')
+      const card = repository.findById('nonexistent' as CardId)
       expect(card).toBeUndefined()
     })
 
     it('空文字IDで undefined を返す', () => {
-      const card = repository.findById('')
+      const card = repository.findById('' as CardId)
       expect(card).toBeUndefined()
     })
   })

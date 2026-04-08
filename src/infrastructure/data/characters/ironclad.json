@@ -1,0 +1,12 @@
+{
+  "id": "ironclad",
+  "name": "Ironclad",
+  "starting_hp": 80,
+  "max_energy": 3,
+  "starting_deck": [
+    { "id": "strike_r", "count": 5 },
+    { "id": "defend_r", "count": 4 },
+    { "id": "bash", "count": 1 }
+  ],
+  "starting_relic_id": "burning_blood"
+}
