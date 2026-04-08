@@ -1,0 +1,62 @@
+[
+  {
+    "id": "the_cleric",
+    "name": "The Cleric",
+    "description": "A friendly cleric offers to assist you on your journey.",
+    "choices": [
+      {
+        "text": "Heal",
+        "outcomes": [
+          { "kind": "gain_hp", "value": 5 },
+          { "kind": "lose_gold", "value": 35 }
+        ]
+      },
+      {
+        "text": "Leave",
+        "outcomes": [
+          { "kind": "nothing" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dead_adventurer",
+    "name": "Dead Adventurer",
+    "description": "You come across a fallen adventurer. Their belongings remain.",
+    "choices": [
+      {
+        "text": "Search Body",
+        "outcomes": [
+          { "kind": "gain_gold", "value": 25 },
+          { "kind": "add_card", "card_id": "strike_r" }
+        ]
+      },
+      {
+        "text": "Leave",
+        "outcomes": [
+          { "kind": "nothing" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "golden_wing",
+    "name": "Golden Wing",
+    "description": "A majestic golden-winged creature lands before you and speaks.",
+    "choices": [
+      {
+        "text": "Take Relic",
+        "outcomes": [
+          { "kind": "gain_relic", "relic_id": "akabeko" },
+          { "kind": "lose_hp", "value": 10 }
+        ]
+      },
+      {
+        "text": "Take Gold",
+        "outcomes": [
+          { "kind": "gain_gold", "value": 50 }
+        ]
+      }
+    ]
+  }
+]

@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import {
   type CharacterDefinition,
   type StarterDeckEntry,
@@ -45,11 +46,10 @@ export class JsonCharacterRepository implements ICharacterRepository {
   private readonly characters: readonly CharacterDefinition[]
 
   constructor() {
-    const rawData: unknown[] = [ironcladData, silentData]
-    this.characters = rawData.map((raw) => {
-      const parsed = CharacterSchema.parse(raw)
-      return toCharacterDefinition(parsed)
-    })
+    this.characters = z
+      .array(CharacterSchema)
+      .parse([ironcladData, silentData])
+      .map(toCharacterDefinition)
   }
 
   findById(characterId: CharacterId): CharacterDefinition | undefined {

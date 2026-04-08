@@ -115,3 +115,53 @@ export const CharacterSchema = z.object({
 })
 
 export type CharacterRaw = z.infer<typeof CharacterSchema>
+
+/**
+ * イベントアウトカムのraw形状スキーマ（discriminated union）
+ *
+ * kind ごとに必須フィールドを明示することで、スキーマと domain 型の二重管理を排除。
+ * - 数値効果: value 必須
+ * - カード操作: card_id 必須（remove_card は任意）
+ * - レリック取得: relic_id 必須
+ * - nothing: 追加フィールドなし
+ */
+export const EventOutcomeSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('gain_hp'), value: z.number() }),
+  z.object({ kind: z.literal('lose_hp'), value: z.number() }),
+  z.object({ kind: z.literal('gain_gold'), value: z.number() }),
+  z.object({ kind: z.literal('lose_gold'), value: z.number() }),
+  z.object({ kind: z.literal('add_card'), card_id: z.string().min(1) }),
+  z.object({ kind: z.literal('remove_card'), card_id: z.string().optional() }),
+  z.object({ kind: z.literal('gain_relic'), relic_id: z.string().min(1) }),
+  z.object({ kind: z.literal('nothing') }),
+])
+
+export type EventOutcomeRaw = z.infer<typeof EventOutcomeSchema>
+
+/**
+ * イベント選択肢のraw形状スキーマ
+ *
+ * イベント画面でプレイヤーが選べる選択肢のJSONraw形状。
+ */
+export const EventChoiceSchema = z.object({
+  text: z.string().min(1),
+  outcomes: z.array(EventOutcomeSchema).min(1),
+})
+
+export type EventChoiceRaw = z.infer<typeof EventChoiceSchema>
+
+/**
+ * イベントJSONのraw形状スキーマ
+ *
+ * マップイベントノードのマスターデータのJSONraw形状。
+ * フィールド名はsnake_case（JSONのraw形状）。ドメイン型のcamelCaseへの
+ * 変換はリポジトリのマッパー関数で行う。
+ */
+export const EventSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1),
+  choices: z.array(EventChoiceSchema).min(1),
+})
+
+export type EventRaw = z.infer<typeof EventSchema>
