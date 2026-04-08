@@ -13,6 +13,8 @@ export type EffectId = string & { readonly _brand: 'EffectId' }
 export type StatusEffectId = string & { readonly _brand: 'StatusEffectId' }
 // PowerId: 筋力・アーティファクト等のパワー識別子（T16）
 export type PowerId = string & { readonly _brand: 'PowerId' }
+// EventId: マップイベントノードで発生するイベントの識別子（T133）
+export type EventId = string & { readonly _brand: 'EventId' }
 
 // --- Target (discriminated union) ---
 // Represents the runtime target of an animation or effect.

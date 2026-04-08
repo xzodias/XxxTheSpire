@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { type Card } from '../../domain/entities/Card'
 import { Rarity } from '../../domain/enums/Rarity'
 import { type ICardRepository } from '../../domain/interfaces/ICardRepository'
@@ -54,11 +55,7 @@ export class JsonCardRepository implements ICardRepository {
   private readonly cards: readonly Card[]
 
   constructor() {
-    const rawCards = ironcladCards as unknown[]
-    this.cards = rawCards.map((raw) => {
-      const parsed = CardSchema.parse(raw)
-      return toCardEntity(parsed)
-    })
+    this.cards = z.array(CardSchema).parse(ironcladCards).map(toCardEntity)
   }
 
   findById(id: CardId): Card | undefined {
