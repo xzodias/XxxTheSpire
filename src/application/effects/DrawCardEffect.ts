@@ -1,7 +1,5 @@
-import { type Effect } from './Effect'
-import { type Player } from '../../domain/entities/Player'
-import { type IRandomService } from '../../domain/interfaces/IRandomService'
-import { type DrawResult, drawCards } from '../../domain/rules/DeckRules'
+import { type Effect, type BattleState, type EffectServices } from './Effect'
+import { drawCards } from '../../domain/rules/DeckRules'
 
 /**
  * ドローエフェクト（アプリケーション層）
@@ -10,6 +8,7 @@ import { type DrawResult, drawCards } from '../../domain/rules/DeckRules'
  * DeckRules.drawCards() を呼び出してイミュータブルに状態を更新する。
  *
  * - count は非負整数でなければならない（負数・小数はコンストラクタで弾く）
+ * - 敵状態（enemies）は変更しない
  * - 参照可能な層: domain, application/effects のみ
  * - 参照してはいけない層: infrastructure, presentation
  */
@@ -20,7 +19,8 @@ export class DrawCardEffect implements Effect {
     }
   }
 
-  apply(player: Player, random: IRandomService): DrawResult {
-    return drawCards(player, this.count, random)
+  apply(state: BattleState, services: EffectServices): BattleState {
+    const { player: updatedPlayer } = drawCards(state.player, this.count, services.random)
+    return { ...state, player: updatedPlayer }
   }
 }
