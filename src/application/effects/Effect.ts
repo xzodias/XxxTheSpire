@@ -1,21 +1,21 @@
-import { type Player } from '../../domain/entities/Player'
-import { type Enemy } from '../../domain/entities/Enemy'
 import { type IRandomService } from '../../domain/interfaces/IRandomService'
+import { type Target } from '../../shared/types'
+import { type BattleState } from '../../domain/entities/BattleState'
+
+export type { BattleState }
 
 /**
- * エフェクト適用対象の戦闘状態（アプリケーション層）
+ * カードプレイ時の一時ターゲット情報（アプリケーション層）
  *
- * エフェクトが読み取り・更新する戦闘状態のスナップショット。
- * domain の Combat エンティティ（turn を含む）のサブセットとして設計し、
- * エフェクトが必要とする最小限の状態のみを保持する。
+ * BattleState（永続戦闘状態）とは異なり、カード1枚のプレイ時にのみ存在する
+ * 一時的なコンテキスト。エフェクトパイプライン全体を通じて変わらない。
  *
- * - turn は含まない（ターン数依存エフェクトが必要になった際に拡張する）
- * - EffectServices と分離することで「状態（何が変わるか）」と
- *   「サービス（どう変えるか）」の責務を明確にする
+ * - SingleTargetEffect は context.target.kind === 'enemy' を必要とする
+ * - AllEnemiesEffect は context.target.kind === 'all' を使用する
+ * - SelfEffect は context.target を参照しない
  */
-export interface BattleState {
-  readonly player: Player
-  readonly enemies: readonly Enemy[]
+export interface EffectContext {
+  readonly target?: Target
 }
 
 /**
@@ -23,25 +23,52 @@ export interface BattleState {
  *
  * 戦闘状態（BattleState）とは別に管理するサービスの集合。
  * エフェクトの入力にも出力にもならないため BattleState から分離する。
- * EffectExecutor（#135）がエフェクトパイプライン全体で使い回す。
  */
 export interface EffectServices {
   readonly random: IRandomService
 }
 
 /**
- * カードエフェクトのインターフェース（アプリケーション層）
+ * カードエフェクトの基底インターフェース（アプリケーション層）
  *
- * カード JSON の effects 配列から生成される実行可能なエフェクト単位。
- * EffectFactory が EffectDef → Effect[] に変換し、各エフェクトが apply() を通じて
- * 戦闘状態を更新する。
+ * apply() は純粋関数として実装する（副作用なし・イミュータブル）。
+ * EffectExecutor での利用イメージ:
+ *   effects.reduce((state, effect) => effect.apply(state, context, services), initialState)
  *
- * - apply() は純粋関数として実装する（副作用なし・イミュータブル）
- * - EffectExecutor での利用イメージ:
- *   effects.reduce((state, effect) => effect.apply(state, services), initialState)
- * - 参照可能な層: domain, application/effects
- * - 参照してはいけない層: infrastructure, presentation
+ * 参照可能な層: domain, application/effects
+ * 参照してはいけない層: infrastructure, presentation
  */
 export interface Effect {
-  apply(state: BattleState, services: EffectServices): BattleState
+  apply(state: BattleState, context: EffectContext, services: EffectServices): BattleState
+}
+
+/**
+ * 単体敵ターゲットエフェクト（アプリケーション層）
+ *
+ * context.target.kind === 'enemy' を前提とするエフェクト。
+ * DamageEffect 等、単体敵を対象とするカード効果に使用する。
+ * target が enemy 以外の場合はプログラマーバグとして throw する。
+ */
+export interface SingleTargetEffect extends Effect {
+  readonly targetKind: 'enemy'
+}
+
+/**
+ * 全体敵ターゲットエフェクト（アプリケーション層）
+ *
+ * context.target.kind === 'all' を前提とするエフェクト。
+ * Whirlwind / Cleave 等、全体攻撃カード効果に使用する。
+ */
+export interface AllEnemiesEffect extends Effect {
+  readonly targetKind: 'all'
+}
+
+/**
+ * プレイヤー自身へのエフェクト（アプリケーション層）
+ *
+ * context.target を参照しない。
+ * BlockEffect / DrawEffect 等、自身に効果を与えるカード効果に使用する。
+ */
+export interface SelfEffect extends Effect {
+  readonly targetKind: 'player'
 }
