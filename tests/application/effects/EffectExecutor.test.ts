@@ -66,6 +66,7 @@ function makeCards(count: number, prefix = 'card') {
     targetType: TargetType.Single,
     effects: [],
     upgraded: false,
+    keywords: [],
   }))
 }
 
@@ -103,7 +104,9 @@ function makeServices(): EffectServices {
     random: {
       next: vi.fn(() => 0),
       nextInt: vi.fn((min: number) => min),
-      shuffle: vi.fn(<T>(array: readonly T[]): readonly T[] => [...array]) as IRandomService['shuffle'],
+      shuffle: vi.fn(<T>(array: readonly T[]): readonly T[] => [
+        ...array,
+      ]) as IRandomService['shuffle'],
     },
   }
 }

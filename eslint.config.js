@@ -27,6 +27,23 @@ export default tseslint.config(
       react: { version: 'detect' },
     },
   },
+  {                                                                                                                                                            
+    extends: [...tseslint.configs.recommended],
+    files: ['src/domain/**/*.ts'],                                                                                                                             
+    rules: {                                
+      'no-restricted-imports': [                                                                                                                               
+        'error',
+        {                                                                                                                                                      
+          patterns: [
+            {                                                                                                                                                  
+              group: ['**/application/**', '**/infrastructure/**', '**/presentation/**'],
+              message: 'domain層はapplication/infrastructure/presentation層をインポートできません（Clean Architecture依存方向ルール）',
+            },                              
+          ],                            
+        },
+      ],                                                                                                                                                       
+    },
+  }, 
   {                                                                                                         
     extends: [...tseslint.configs.recommended],                                                             
     files: ['tests/**/*.ts'],                                                                               
