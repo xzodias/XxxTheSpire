@@ -1,8 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
-import { DrawCardEffect } from '../../../src/application/effects/DrawCardEffect'
+import { DrawEffect } from '../../../src/application/effects/DrawEffect'
 import {
   type Effect,
   type BattleState,
+  type EffectContext,
   type EffectServices,
 } from '../../../src/application/effects/Effect'
 import { type Player } from '../../../src/domain/entities/Player'
@@ -98,60 +99,64 @@ function makeBattleState(player: Player, overrides?: Partial<BattleState>): Batt
   return { player, enemies: [], ...overrides }
 }
 
+function makeContext(): EffectContext {
+  return {}
+}
+
 // ─────────────────────────────────────────────
-// DrawCardEffect — 型確認
+// DrawEffect — 型確認
 // ─────────────────────────────────────────────
 
-describe('DrawCardEffect - Effect インターフェース適合', () => {
+describe('DrawEffect - Effect インターフェース適合', () => {
   it('Effect インターフェースを実装している', () => {
-    const effect: Effect = new DrawCardEffect(1)
+    const effect: Effect = new DrawEffect(1)
     expect(effect).toBeDefined()
   })
 
   it('count が正の整数で構築できる', () => {
-    const effect = new DrawCardEffect(3)
-    expect(effect).toBeInstanceOf(DrawCardEffect)
+    const effect = new DrawEffect(3)
+    expect(effect).toBeInstanceOf(DrawEffect)
   })
 })
 
 // ─────────────────────────────────────────────
-// DrawCardEffect.apply — AC5: ドローエフェクトを持つカードをプレイ
+// DrawEffect.apply — AC5: ドローエフェクトを持つカードをプレイ
 // ─────────────────────────────────────────────
 
-describe('DrawCardEffect.apply', () => {
+describe('DrawEffect.apply', () => {
   describe('AC5: ドローエフェクトで規定枚数のカードが手札に加わる', () => {
     it('count=2 のとき手札が 2 枚増える', () => {
       const player = makePlayer({ deck: makeCards(10) })
-      const effect = new DrawCardEffect(2)
+      const effect = new DrawEffect(2)
 
-      const result = effect.apply(makeBattleState(player), makeServices())
+      const result = effect.apply(makeBattleState(player), makeContext(), makeServices())
 
       expect(result.player.hand).toHaveLength(2)
     })
 
     it('count=1 のとき手札が 1 枚増える（境界値：最小）', () => {
       const player = makePlayer({ deck: makeCards(5) })
-      const effect = new DrawCardEffect(1)
+      const effect = new DrawEffect(1)
 
-      const result = effect.apply(makeBattleState(player), makeServices())
+      const result = effect.apply(makeBattleState(player), makeContext(), makeServices())
 
       expect(result.player.hand).toHaveLength(1)
     })
 
     it('count=5 のとき手札が 5 枚増える', () => {
       const player = makePlayer({ deck: makeCards(10) })
-      const effect = new DrawCardEffect(5)
+      const effect = new DrawEffect(5)
 
-      const result = effect.apply(makeBattleState(player), makeServices())
+      const result = effect.apply(makeBattleState(player), makeContext(), makeServices())
 
       expect(result.player.hand).toHaveLength(5)
     })
 
     it('ドロー後に山札の枚数が減る', () => {
       const player = makePlayer({ deck: makeCards(10) })
-      const effect = new DrawCardEffect(3)
+      const effect = new DrawEffect(3)
 
-      const result = effect.apply(makeBattleState(player), makeServices())
+      const result = effect.apply(makeBattleState(player), makeContext(), makeServices())
 
       expect(result.player.deck).toHaveLength(7)
     })
@@ -163,9 +168,9 @@ describe('DrawCardEffect.apply', () => {
       const shuffleMock = vi.fn(<T>(arr: readonly T[]): readonly T[] => [
         ...arr,
       ]) as IRandomService['shuffle']
-      const effect = new DrawCardEffect(3)
+      const effect = new DrawEffect(3)
 
-      const result = effect.apply(makeBattleState(player), makeServices({ shuffle: shuffleMock }))
+      const result = effect.apply(makeBattleState(player), makeContext(), makeServices({ shuffle: shuffleMock }))
 
       expect(result.player.hand).toHaveLength(3)
       expect(shuffleMock).toHaveBeenCalledOnce()
@@ -178,18 +183,18 @@ describe('DrawCardEffect.apply', () => {
         deck: makeCards(5, 'deck'),
         hand: makeCards(MAX_HAND_SIZE, 'hand'),
       })
-      const effect = new DrawCardEffect(2)
+      const effect = new DrawEffect(2)
 
-      const result = effect.apply(makeBattleState(player), makeServices())
+      const result = effect.apply(makeBattleState(player), makeContext(), makeServices())
 
       expect(result.player.hand).toHaveLength(MAX_HAND_SIZE)
     })
 
     it('手札が 9 枚で 3 枚 draw すると 1 枚ドロー・2 枚バーン', () => {
       const player = makePlayer({ deck: makeCards(5, 'deck'), hand: makeCards(9, 'hand') })
-      const effect = new DrawCardEffect(3)
+      const effect = new DrawEffect(3)
 
-      const result = effect.apply(makeBattleState(player), makeServices())
+      const result = effect.apply(makeBattleState(player), makeContext(), makeServices())
 
       expect(result.player.hand).toHaveLength(MAX_HAND_SIZE)
     })
@@ -198,20 +203,20 @@ describe('DrawCardEffect.apply', () => {
   describe('AC4: デッキ操作の結果が BattleState に反映される', () => {
     it('apply の戻り値に更新後の player が含まれる', () => {
       const player = makePlayer({ deck: makeCards(5) })
-      const effect = new DrawCardEffect(2)
+      const effect = new DrawEffect(2)
 
-      const result = effect.apply(makeBattleState(player), makeServices())
+      const result = effect.apply(makeBattleState(player), makeContext(), makeServices())
 
       expect(result.player).not.toBe(player)
       expect(result.player.hand).toHaveLength(2)
     })
 
-    it('apply は enemies を変更しない（DrawCardEffect はプレイヤーのみ変更）', () => {
+    it('apply は enemies を変更しない（DrawEffect はプレイヤーのみ変更）', () => {
       const player = makePlayer({ deck: makeCards(5) })
       const state = makeBattleState(player)
-      const effect = new DrawCardEffect(2)
+      const effect = new DrawEffect(2)
 
-      const result = effect.apply(state, makeServices())
+      const result = effect.apply(state, makeContext(), makeServices())
 
       expect(result.enemies).toBe(state.enemies)
     })
@@ -222,9 +227,9 @@ describe('DrawCardEffect.apply', () => {
       const player = makePlayer({ deck: makeCards(10) })
       const originalDeckLength = player.deck.length
       const originalHandLength = player.hand.length
-      const effect = new DrawCardEffect(3)
+      const effect = new DrawEffect(3)
 
-      effect.apply(makeBattleState(player), makeServices())
+      effect.apply(makeBattleState(player), makeContext(), makeServices())
 
       expect(player.deck).toHaveLength(originalDeckLength)
       expect(player.hand).toHaveLength(originalHandLength)
@@ -234,40 +239,40 @@ describe('DrawCardEffect.apply', () => {
   describe('異常系 - 不正な count', () => {
     it('count=0 で apply すると手札が増えない', () => {
       const player = makePlayer({ deck: makeCards(5) })
-      const effect = new DrawCardEffect(0)
+      const effect = new DrawEffect(0)
 
-      const result = effect.apply(makeBattleState(player), makeServices())
+      const result = effect.apply(makeBattleState(player), makeContext(), makeServices())
 
       expect(result.player.hand).toHaveLength(0)
     })
 
     it('山札も捨て札も空のとき apply してもエラーにならない', () => {
       const player = makePlayer({ deck: [], discardPile: [] })
-      const effect = new DrawCardEffect(3)
+      const effect = new DrawEffect(3)
 
-      expect(() => effect.apply(makeBattleState(player), makeServices())).not.toThrow()
+      expect(() => effect.apply(makeBattleState(player), makeContext(), makeServices())).not.toThrow()
     })
   })
 })
 
 // ─────────────────────────────────────────────
-// DrawCardEffect — Factoryパターン観点
+// DrawEffect — Factoryパターン観点
 // ─────────────────────────────────────────────
 
-describe('DrawCardEffect - Factory / 生成', () => {
+describe('DrawEffect - Factory / 生成', () => {
   it('count=1 で正常に生成できる（最小正常値）', () => {
-    expect(() => new DrawCardEffect(1)).not.toThrow()
+    expect(() => new DrawEffect(1)).not.toThrow()
   })
 
   it('count=MAX_HAND_SIZE で正常に生成できる（最大正常値）', () => {
-    expect(() => new DrawCardEffect(MAX_HAND_SIZE)).not.toThrow()
+    expect(() => new DrawEffect(MAX_HAND_SIZE)).not.toThrow()
   })
 
   it('count が負のとき生成時にエラーを投げる', () => {
-    expect(() => new DrawCardEffect(-1)).toThrow()
+    expect(() => new DrawEffect(-1)).toThrow()
   })
 
   it('count が非整数（小数）のとき生成時にエラーを投げる', () => {
-    expect(() => new DrawCardEffect(1.5)).toThrow()
+    expect(() => new DrawEffect(1.5)).toThrow()
   })
 })
