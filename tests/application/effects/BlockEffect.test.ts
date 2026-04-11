@@ -8,8 +8,9 @@ import {
 } from '../../../src/application/effects/Effect'
 import { type Player } from '../../../src/domain/entities/Player'
 import { type Enemy } from '../../../src/domain/entities/Enemy'
+import { type StatusEffect, StatusEffectType } from '../../../src/domain/entities/StatusEffect'
 import { type IRandomService } from '../../../src/domain/interfaces/IRandomService'
-import { type EnemyId } from '../../../src/shared/types'
+import { type EnemyId, type StatusEffectId } from '../../../src/shared/types'
 import { Health } from '../../../src/domain/value-objects/Health'
 import { Block } from '../../../src/domain/value-objects/Block'
 import { Energy } from '../../../src/domain/value-objects/Energy'
@@ -21,6 +22,16 @@ import { Gold } from '../../../src/domain/value-objects/Gold'
 
 function makeEnemyId(id: string): EnemyId {
   return id as EnemyId
+}
+
+function makeStatusEffect(type: StatusEffectType, stacks: number, duration: number): StatusEffect {
+  return {
+    id: `${type}_test` as StatusEffectId,
+    name: type,
+    type,
+    stacks,
+    duration,
+  }
 }
 
 function makeEnemy(id: string): Enemy {
@@ -39,6 +50,11 @@ function makeEnemy(id: string): Enemy {
     powers: [],
     statusEffects: [],
   }
+}
+
+function makePlayerWithStatusEffects(statusEffects: StatusEffect[]): Player {
+  const player = makePlayer()
+  return { ...player, statusEffects }
 }
 
 function makePlayer(
@@ -265,5 +281,101 @@ describe('BlockEffect.apply - BattleState への反映', () => {
     const result = effect.apply(state, makeContext(), makeServices())
 
     expect(result).not.toBe(state)
+  })
+})
+
+// ─────────────────────────────────────────────
+// BlockEffect.apply — AC6: 俊敏（Dexterity）バフ/デバフ
+// ─────────────────────────────────────────────
+
+describe('BlockEffect.apply - AC6: 俊敏（Dexterity）バフ/デバフ', () => {
+  it('観点01: プレイヤーが Dexterity(stacks=2) のとき base+2 ブロックを獲得する', () => {
+    const player = makePlayerWithStatusEffects([makeStatusEffect(StatusEffectType.Dexterity, 2, 0)])
+    const state = makeBattleState(player)
+    // base=5, +2 dexterity → block=7
+    const effect = new BlockEffect(5)
+
+    const result = effect.apply(state, makeContext(), makeServices())
+
+    expect(result.player.block.value).toBe(7)
+  })
+
+  it('観点01: プレイヤーが Dexterity(stacks=-3) のとき base-3 ブロックを獲得する（デバフ）', () => {
+    const player = makePlayerWithStatusEffects([
+      makeStatusEffect(StatusEffectType.Dexterity, -3, 0),
+    ])
+    const state = makeBattleState(player)
+    // base=5, -3 dexterity → block=2
+    const effect = new BlockEffect(5)
+
+    const result = effect.apply(state, makeContext(), makeServices())
+
+    expect(result.player.block.value).toBe(2)
+  })
+
+  it('観点02: Dexterity(stacks=0) のとき変化なし（境界値）', () => {
+    const player = makePlayerWithStatusEffects([makeStatusEffect(StatusEffectType.Dexterity, 0, 0)])
+    const state = makeBattleState(player)
+    const effect = new BlockEffect(5)
+
+    const result = effect.apply(state, makeContext(), makeServices())
+
+    expect(result.player.block.value).toBe(5)
+  })
+
+  it('観点01: Dexterity デバフで結果が 0 未満にならない（最小値 0 保証）', () => {
+    const player = makePlayerWithStatusEffects([
+      makeStatusEffect(StatusEffectType.Dexterity, -10, 0),
+    ])
+    const state = makeBattleState(player)
+    // base=3, -10 dexterity → max(0, 3-10) = 0
+    const effect = new BlockEffect(3)
+
+    const result = effect.apply(state, makeContext(), makeServices())
+
+    expect(result.player.block.value).toBe(0)
+  })
+
+  it('観点04: Dexterity(stacks=5) かつ 既存ブロック(3) の組み合わせ（中間値）', () => {
+    const player = makePlayer({ block: 3 })
+    const playerWithDex = {
+      ...player,
+      statusEffects: [makeStatusEffect(StatusEffectType.Dexterity, 5, 0)],
+    }
+    const state = makeBattleState(playerWithDex)
+    // base=4, +5 dexterity → 9, existing block 3 → total 12
+    const effect = new BlockEffect(4)
+
+    const result = effect.apply(state, makeContext(), makeServices())
+
+    expect(result.player.block.value).toBe(12)
+  })
+
+  it('観点11: 元の player Combatant を変更しない（イミュータビリティ）', () => {
+    const player = makePlayerWithStatusEffects([makeStatusEffect(StatusEffectType.Dexterity, 2, 0)])
+    const state = makeBattleState(player)
+    const originalBlock = state.player.block.value
+    const originalStacks = state.player.statusEffects[0]?.stacks
+    const effect = new BlockEffect(5)
+
+    effect.apply(state, makeContext(), makeServices())
+
+    expect(state.player.block.value).toBe(originalBlock)
+    expect(state.player.statusEffects[0]?.stacks).toBe(originalStacks)
+  })
+
+  it('観点28: 同一 Dexterity 状態で複数回呼んでも同じブロック増加量（冪等性）', () => {
+    const player1 = makePlayerWithStatusEffects([
+      makeStatusEffect(StatusEffectType.Dexterity, 3, 0),
+    ])
+    const player2 = makePlayerWithStatusEffects([
+      makeStatusEffect(StatusEffectType.Dexterity, 3, 0),
+    ])
+    const effect = new BlockEffect(5)
+
+    const result1 = effect.apply(makeBattleState(player1), makeContext(), makeServices())
+    const result2 = effect.apply(makeBattleState(player2), makeContext(), makeServices())
+
+    expect(result1.player.block.value).toBe(result2.player.block.value)
   })
 })

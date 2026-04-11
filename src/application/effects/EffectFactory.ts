@@ -3,6 +3,7 @@ import { type Effect } from './Effect'
 import { DamageEffect } from './DamageEffect'
 import { BlockEffect } from './BlockEffect'
 import { DrawEffect } from './DrawEffect'
+import { AllEnemiesDamageEffect } from './AllEnemiesDamageEffect'
 
 type EffectBuilder = (def: EffectDef) => Effect
 
@@ -16,6 +17,7 @@ const EFFECT_BUILDERS: Record<string, EffectBuilder> = {
   damage: (def) => new DamageEffect(def.value),
   block: (def) => new BlockEffect(def.value),
   draw: (def) => new DrawEffect(def.value),
+  all_enemies_damage: (def) => new AllEnemiesDamageEffect(def.value),
 }
 
 /**
@@ -25,7 +27,7 @@ const EFFECT_BUILDERS: Record<string, EffectBuilder> = {
  *
  * - 成功時: ok(Effect[]) を返す
  * - 未知タイプ・不正値があった場合: err(errors) を返す（エラー内容を文字列配列で通知）
- * - Error 以外の予期しない例外は再スローしてプログラマーバグを隠さない
+ * - コンストラクタの例外は全て err に変換する（不正な EffectDef データを安全に処理するため）
  * - 参照可能な層: domain, application/effects のみ
  * - 参照してはいけない層: infrastructure, presentation
  */
@@ -43,8 +45,9 @@ export class EffectFactory {
       try {
         effects.push(builder(def))
       } catch (e) {
-        if (!(e instanceof Error)) throw e
-        errors.push(`Failed to build effect "${def.type}": ${e.message}`)
+        errors.push(
+          `Failed to build effect "${def.type}": ${e instanceof Error ? e.message : String(e)}`,
+        )
       }
     }
 
