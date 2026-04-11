@@ -8,8 +8,9 @@ import {
 } from '../../../src/application/effects/Effect'
 import { type Player } from '../../../src/domain/entities/Player'
 import { type Enemy } from '../../../src/domain/entities/Enemy'
+import { type StatusEffect, StatusEffectType } from '../../../src/domain/entities/StatusEffect'
 import { type IRandomService } from '../../../src/domain/interfaces/IRandomService'
-import { type EnemyId, type Target } from '../../../src/shared/types'
+import { type EnemyId, type Target, type StatusEffectId } from '../../../src/shared/types'
 import { Health } from '../../../src/domain/value-objects/Health'
 import { Block } from '../../../src/domain/value-objects/Block'
 import { Energy } from '../../../src/domain/value-objects/Energy'
@@ -23,9 +24,24 @@ function makeEnemyId(id: string): EnemyId {
   return id as EnemyId
 }
 
+function makeStatusEffect(type: StatusEffectType, stacks: number, duration: number): StatusEffect {
+  return {
+    id: `${type}_test` as StatusEffectId,
+    name: type,
+    type,
+    stacks,
+    duration,
+  }
+}
+
 function makeEnemy(
   id: string,
-  overrides?: Partial<{ currentHp: number; maxHp: number; block: number }>,
+  overrides?: Partial<{
+    currentHp: number
+    maxHp: number
+    block: number
+    statusEffects: StatusEffect[]
+  }>,
 ): Enemy {
   const hp = Health.create(overrides?.currentHp ?? 50, overrides?.maxHp ?? 50)
   const block = Block.create(overrides?.block ?? 0)
@@ -40,8 +56,13 @@ function makeEnemy(
     health: hp.value,
     block: block.value,
     powers: [],
-    statusEffects: [],
+    statusEffects: overrides?.statusEffects ?? [],
   }
+}
+
+function makePlayerWithStatusEffects(statusEffects: StatusEffect[]): Player {
+  const player = makePlayer()
+  return { ...player, statusEffects }
 }
 
 function makePlayer(): Player {
@@ -320,5 +341,192 @@ describe('DamageEffect.apply - イミュータビリティ', () => {
     const result = effect.apply(state, makeContext(target), makeServices())
 
     expect(result.player).toBe(state.player)
+  })
+})
+
+// ─────────────────────────────────────────────
+// DamageEffect.apply — AC2: 筋力バフ/デバフ（Strength）
+// ─────────────────────────────────────────────
+
+describe('DamageEffect.apply - AC2: 筋力バフ/デバフ（Strength）', () => {
+  it('観点01: プレイヤーが Strength(stacks=3) のとき敵に base+3 ダメージを与える', () => {
+    const enemy = makeEnemy('jaw_worm', { currentHp: 50, maxHp: 50, block: 0 })
+    const target: Target = { kind: 'enemy', id: makeEnemyId('jaw_worm') }
+    const player = makePlayerWithStatusEffects([makeStatusEffect(StatusEffectType.Strength, 3, 0)])
+    const state = makeBattleState([enemy], player)
+    // base=6, +3 strength → damage=9
+    const effect = new DamageEffect(6)
+
+    const result = effect.apply(state, makeContext(target), makeServices())
+
+    const resultEnemy = result.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))
+    expect(resultEnemy?.health.current).toBe(41)
+  })
+
+  it('観点01: プレイヤーが Strength(stacks=-2) のとき敵に base-2 ダメージを与える（デバフ）', () => {
+    const enemy = makeEnemy('jaw_worm', { currentHp: 50, maxHp: 50, block: 0 })
+    const target: Target = { kind: 'enemy', id: makeEnemyId('jaw_worm') }
+    const player = makePlayerWithStatusEffects([makeStatusEffect(StatusEffectType.Strength, -2, 0)])
+    const state = makeBattleState([enemy], player)
+    // base=6, -2 strength → damage=4
+    const effect = new DamageEffect(6)
+
+    const result = effect.apply(state, makeContext(target), makeServices())
+
+    const resultEnemy = result.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))
+    expect(resultEnemy?.health.current).toBe(46)
+  })
+
+  it('観点28: 同一 Strength 状態で複数回呼んでも同じダメージ（冪等性）', () => {
+    const target: Target = { kind: 'enemy', id: makeEnemyId('jaw_worm') }
+    const player = makePlayerWithStatusEffects([makeStatusEffect(StatusEffectType.Strength, 3, 0)])
+    const effect = new DamageEffect(6)
+
+    const enemy1 = makeEnemy('jaw_worm', { currentHp: 50, maxHp: 50 })
+    const state1 = makeBattleState([enemy1], player)
+    const result1 = effect.apply(state1, makeContext(target), makeServices())
+
+    const enemy2 = makeEnemy('jaw_worm', { currentHp: 50, maxHp: 50 })
+    const state2 = makeBattleState([enemy2], player)
+    const result2 = effect.apply(state2, makeContext(target), makeServices())
+
+    const hp1 = result1.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))?.health.current
+    const hp2 = result2.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))?.health.current
+    expect(hp1).toBe(hp2)
+  })
+})
+
+// ─────────────────────────────────────────────
+// DamageEffect.apply — AC3: 脆弱（Vulnerable）
+// ─────────────────────────────────────────────
+
+describe('DamageEffect.apply - AC3: 脆弱（Vulnerable）', () => {
+  it('観点01: 敵が Vulnerable(duration=1) のとき ×1.5 floor ダメージを受ける', () => {
+    const enemy = makeEnemy('jaw_worm', {
+      currentHp: 50,
+      maxHp: 50,
+      block: 0,
+      statusEffects: [makeStatusEffect(StatusEffectType.Vulnerable, 0, 1)],
+    })
+    const target: Target = { kind: 'enemy', id: makeEnemyId('jaw_worm') }
+    const state = makeBattleState([enemy])
+    // base=10, floor(10 * 1.5) = 15
+    const effect = new DamageEffect(10)
+
+    const result = effect.apply(state, makeContext(target), makeServices())
+
+    const resultEnemy = result.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))
+    expect(resultEnemy?.health.current).toBe(35)
+  })
+
+  it('観点01: floor 切り捨てが適用される（5 * 1.5 = 7.5 → 7）', () => {
+    const enemy = makeEnemy('jaw_worm', {
+      currentHp: 50,
+      maxHp: 50,
+      block: 0,
+      statusEffects: [makeStatusEffect(StatusEffectType.Vulnerable, 0, 2)],
+    })
+    const target: Target = { kind: 'enemy', id: makeEnemyId('jaw_worm') }
+    const state = makeBattleState([enemy])
+    const effect = new DamageEffect(5)
+
+    const result = effect.apply(state, makeContext(target), makeServices())
+
+    const resultEnemy = result.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))
+    expect(resultEnemy?.health.current).toBe(43)
+  })
+
+  it('観点02: 敵が Vulnerable(duration=0) のとき倍率なし（境界値）', () => {
+    const enemy = makeEnemy('jaw_worm', {
+      currentHp: 50,
+      maxHp: 50,
+      block: 0,
+      statusEffects: [makeStatusEffect(StatusEffectType.Vulnerable, 0, 0)],
+    })
+    const target: Target = { kind: 'enemy', id: makeEnemyId('jaw_worm') }
+    const state = makeBattleState([enemy])
+    const effect = new DamageEffect(10)
+
+    const result = effect.apply(state, makeContext(target), makeServices())
+
+    const resultEnemy = result.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))
+    expect(resultEnemy?.health.current).toBe(40)
+  })
+
+  it('観点16: Vulnerable あり vs なし で受けるダメージに差がある', () => {
+    const target: Target = { kind: 'enemy', id: makeEnemyId('jaw_worm') }
+    const effect = new DamageEffect(10)
+
+    const normalEnemy = makeEnemy('jaw_worm', { currentHp: 50, maxHp: 50, block: 0 })
+    const normalState = makeBattleState([normalEnemy])
+    const normalResult = effect.apply(normalState, makeContext(target), makeServices())
+
+    const vulnerableEnemy = makeEnemy('jaw_worm', {
+      currentHp: 50,
+      maxHp: 50,
+      block: 0,
+      statusEffects: [makeStatusEffect(StatusEffectType.Vulnerable, 0, 1)],
+    })
+    const vulnerableState = makeBattleState([vulnerableEnemy])
+    const vulnerableResult = effect.apply(vulnerableState, makeContext(target), makeServices())
+
+    const normalHp = normalResult.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))?.health
+      .current
+    const vulnerableHp = vulnerableResult.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))
+      ?.health.current
+
+    expect(vulnerableHp).toBeLessThan(normalHp!)
+  })
+})
+
+// ─────────────────────────────────────────────
+// DamageEffect.apply — AC5: 弱体化（Weak）
+// ─────────────────────────────────────────────
+
+describe('DamageEffect.apply - AC5: 弱体化（Weak）', () => {
+  it('観点01: プレイヤーが Weak(duration=1) のとき ×0.75 floor ダメージを与える', () => {
+    const enemy = makeEnemy('jaw_worm', { currentHp: 50, maxHp: 50, block: 0 })
+    const target: Target = { kind: 'enemy', id: makeEnemyId('jaw_worm') }
+    const player = makePlayerWithStatusEffects([makeStatusEffect(StatusEffectType.Weak, 0, 1)])
+    const state = makeBattleState([enemy], player)
+    // base=10, floor(10 * 0.75) = 7
+    const effect = new DamageEffect(10)
+
+    const result = effect.apply(state, makeContext(target), makeServices())
+
+    const resultEnemy = result.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))
+    expect(resultEnemy?.health.current).toBe(43)
+  })
+
+  it('観点02: プレイヤーが Weak(duration=0) のとき倍率なし（境界値）', () => {
+    const enemy = makeEnemy('jaw_worm', { currentHp: 50, maxHp: 50, block: 0 })
+    const target: Target = { kind: 'enemy', id: makeEnemyId('jaw_worm') }
+    const player = makePlayerWithStatusEffects([makeStatusEffect(StatusEffectType.Weak, 0, 0)])
+    const state = makeBattleState([enemy], player)
+    const effect = new DamageEffect(10)
+
+    const result = effect.apply(state, makeContext(target), makeServices())
+
+    const resultEnemy = result.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))
+    expect(resultEnemy?.health.current).toBe(40)
+  })
+
+  it('観点16: Weak(attacker) かつ Vulnerable(target) の組み合わせテスト', () => {
+    // base=10, weak floor(10*0.75)=7, vulnerable floor(7*1.5)=10
+    const enemy = makeEnemy('jaw_worm', {
+      currentHp: 50,
+      maxHp: 50,
+      block: 0,
+      statusEffects: [makeStatusEffect(StatusEffectType.Vulnerable, 0, 1)],
+    })
+    const target: Target = { kind: 'enemy', id: makeEnemyId('jaw_worm') }
+    const player = makePlayerWithStatusEffects([makeStatusEffect(StatusEffectType.Weak, 0, 1)])
+    const state = makeBattleState([enemy], player)
+    const effect = new DamageEffect(10)
+
+    const result = effect.apply(state, makeContext(target), makeServices())
+
+    const resultEnemy = result.enemies.find((e) => e.enemyId === makeEnemyId('jaw_worm'))
+    expect(resultEnemy?.health.current).toBe(40)
   })
 })

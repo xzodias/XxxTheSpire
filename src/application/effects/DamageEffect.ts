@@ -5,7 +5,7 @@ import {
   type EffectServices,
 } from './Effect'
 import { updateEnemy } from '../../domain/rules/EnemyRules'
-import { applyDamageToCharacter } from '../../domain/rules/CombatRules'
+import { applyDamageToCharacter, calculateDamage } from '../../domain/rules/CombatRules'
 
 /**
  * ダメージエフェクト（アプリケーション層）
@@ -38,7 +38,7 @@ export class DamageEffect implements SingleTargetEffect {
     }
 
     const result = updateEnemy(state.enemies, target.id, (enemy) =>
-      applyDamageToCharacter(enemy, this.amount),
+      applyDamageToCharacter(enemy, calculateDamage(this.amount, state.player, enemy)),
     )
     // 対象敵が既に存在しない場合（先に倒れた等）は state をそのまま返す
     const updatedEnemies = result.ok ? result.value : state.enemies

@@ -5,6 +5,7 @@ import {
   type EffectServices,
 } from './Effect'
 import { setPlayerBlock } from '../../domain/rules/PlayerRules'
+import { calculateBlock } from '../../domain/rules/CombatRules'
 
 /**
  * ブロックエフェクト（アプリケーション層）
@@ -30,7 +31,7 @@ export class BlockEffect implements SelfEffect {
   apply(state: BattleState, context: EffectContext, services: EffectServices): BattleState {
     void context // SelfEffect: プレイヤー自身に適用するためターゲット不要
     void services // SelfEffect インターフェース互換のため省略不可（このエフェクトでは未使用）
-    const updatedBlock = state.player.block.add(this.amount)
+    const updatedBlock = state.player.block.add(calculateBlock(this.amount, state.player))
     return { ...state, player: setPlayerBlock(state.player, updatedBlock) }
   }
 }
