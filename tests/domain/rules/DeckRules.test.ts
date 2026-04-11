@@ -37,6 +37,7 @@ function makeCard(id: string): Card {
     targetType: TargetType.Single,
     effects: [],
     upgraded: false,
+    keywords: [],
   }
 }
 

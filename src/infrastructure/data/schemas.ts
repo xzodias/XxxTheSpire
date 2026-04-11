@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { CardKeyword } from '../../domain/enums/CardKeyword'
 import { CardType } from '../../domain/enums/CardType'
 import { Rarity } from '../../domain/enums/Rarity'
 import { TargetType } from '../../domain/enums/TargetType'
@@ -39,6 +40,7 @@ export const CardSchema = z.object({
   target_type: z.nativeEnum(TargetType),
   effects: z.array(EffectDefSchema),
   upgraded: z.boolean(),
+  keywords: z.array(z.nativeEnum(CardKeyword)).optional(),
 })
 
 export type CardRaw = z.infer<typeof CardSchema>

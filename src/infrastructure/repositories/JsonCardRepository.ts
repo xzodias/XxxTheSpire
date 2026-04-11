@@ -41,6 +41,7 @@ function toCardEntity(raw: CardRaw): Card {
     targetType: raw.target_type,
     effects: mapEffects(raw.effects),
     upgraded: raw.upgraded,
+    keywords: raw.keywords ?? [],
   }
 }
 

@@ -1,4 +1,5 @@
 import { type CardId, type EffectDef } from '../../shared/types'
+import { type CardKeyword } from '../enums/CardKeyword'
 import { type CardType } from '../enums/CardType'
 import { type Rarity } from '../enums/Rarity'
 import { type TargetType } from '../enums/TargetType'
@@ -21,4 +22,5 @@ export interface Card {
   readonly targetType: TargetType
   readonly effects: readonly EffectDef[]
   readonly upgraded: boolean
+  readonly keywords: readonly CardKeyword[]
 }

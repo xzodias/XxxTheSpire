@@ -38,6 +38,7 @@ function makeCard(id: string): Card {
     targetType: TargetType.Single,
     effects: [],
     upgraded: false,
+    keywords: [],
   }
 }
 
@@ -170,7 +171,11 @@ describe('DrawEffect.apply', () => {
       ]) as IRandomService['shuffle']
       const effect = new DrawEffect(3)
 
-      const result = effect.apply(makeBattleState(player), makeContext(), makeServices({ shuffle: shuffleMock }))
+      const result = effect.apply(
+        makeBattleState(player),
+        makeContext(),
+        makeServices({ shuffle: shuffleMock }),
+      )
 
       expect(result.player.hand).toHaveLength(3)
       expect(shuffleMock).toHaveBeenCalledOnce()
@@ -250,7 +255,9 @@ describe('DrawEffect.apply', () => {
       const player = makePlayer({ deck: [], discardPile: [] })
       const effect = new DrawEffect(3)
 
-      expect(() => effect.apply(makeBattleState(player), makeContext(), makeServices())).not.toThrow()
+      expect(() =>
+        effect.apply(makeBattleState(player), makeContext(), makeServices()),
+      ).not.toThrow()
     })
   })
 })
