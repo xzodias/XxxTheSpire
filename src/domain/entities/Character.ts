@@ -1,30 +1,19 @@
-import { type PowerId } from '../../shared/types'
 import { type Health } from '../value-objects/Health'
 import { type Block } from '../value-objects/Block'
 import { type StatusEffect } from './StatusEffect'
-
-/**
- * アクティブパワー
- *
- * 戦闘中に付与されているパワー（筋力・アーティファクト等の永続バフ）の状態。
- * id はパワーの種別識別子、stacks は現在のスタック数を表す。
- */
-export type ActivePower = {
-  readonly id: PowerId
-  readonly stacks: number
-}
+import { type Power } from './Power'
 
 /**
  * Combatant インターフェース
  *
  * Player と Enemy の共通操作を抽象化する。
- * Power は Combatant ではなく Player/Enemy 各自が保持する設計。
- * これにより複数プレイヤー対応や敵 Power への拡張が容易になる。
+ * - statusEffects: 受動的な値参照型の効果（Strength/Dexterity/Vulnerable/Weak/Artifact）
+ * - powers: トリガー型の能動的な効果（Poison/Burn 等、Observer パターンで実装）
  */
 export interface Combatant {
   readonly health: Health
   readonly block: Block
-  readonly powers: readonly ActivePower[]
+  readonly powers: readonly Power[]
   readonly statusEffects: readonly StatusEffect[]
 }
 

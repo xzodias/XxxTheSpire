@@ -9,6 +9,8 @@ import { type Target } from '../../shared/types'
 import { EffectFactory } from '../../application/effects/EffectFactory'
 import { executeEffects } from '../../application/effects/EffectExecutor'
 import { type BattleState } from '../../domain/entities/BattleState'
+import { tickStatusEffects } from '../../domain/rules/StatusEffectRules'
+import { notifyPlayerPowers, notifyEnemyPowers } from '../../domain/entities/Power'
 
 /**
  * 戦闘データの discriminated union
@@ -51,6 +53,14 @@ interface BattleViewModelState {
     randomService: IRandomService,
   ) => void
   readonly playCard: (card: Card, target: Target | undefined) => void
+  /** プレイヤーターン開始処理: プレイヤーの Block をリセット、Poison ダメージを適用 */
+  readonly startPlayerTurn: () => void
+  /** プレイヤーターン終了処理: プレイヤーの持続型 StatusEffect を1ターン減算 */
+  readonly endPlayerTurn: () => void
+  /** 敵ターン開始処理: 全敵の Block をリセット、敵の Poison ダメージを適用 */
+  readonly startEnemyTurn: () => void
+  /** 敵ターン終了処理: 全敵の持続型 StatusEffect を1ターン減算 */
+  readonly endEnemyTurn: () => void
 }
 
 export const useBattleViewModel = create<BattleViewModelState>()(
@@ -97,6 +107,80 @@ export const useBattleViewModel = create<BattleViewModelState>()(
           status: 'active' as const,
           player: nextState.player,
           enemies: nextState.enemies,
+          randomService: battleData.randomService,
+        })
+      })
+    },
+
+    startPlayerTurn: () => {
+      const { battleData } = get()
+      if (battleData.status !== 'active') return
+
+      const stateWithResetBlock = {
+        player: { ...battleData.player, block: battleData.player.block.reset() } as Player,
+        enemies: battleData.enemies,
+      }
+      const nextState = notifyPlayerPowers({ type: 'on_turn_start' }, stateWithResetBlock)
+
+      set((draft) => {
+        draft.battleData = castDraft({
+          status: 'active' as const,
+          player: nextState.player,
+          enemies: nextState.enemies,
+          randomService: battleData.randomService,
+        })
+      })
+    },
+
+    endPlayerTurn: () => {
+      const { battleData } = get()
+      if (battleData.status !== 'active') return
+
+      const tickedPlayer = tickStatusEffects(battleData.player)
+
+      set((draft) => {
+        draft.battleData = castDraft({
+          status: 'active' as const,
+          player: tickedPlayer,
+          enemies: battleData.enemies,
+          randomService: battleData.randomService,
+        })
+      })
+    },
+
+    startEnemyTurn: () => {
+      const { battleData } = get()
+      if (battleData.status !== 'active') return
+
+      const stateWithResetBlock = {
+        player: battleData.player,
+        enemies: battleData.enemies.map(
+          (enemy): Enemy => ({ ...enemy, block: enemy.block.reset() }),
+        ),
+      }
+      const nextState = notifyEnemyPowers({ type: 'on_turn_start' }, stateWithResetBlock)
+
+      set((draft) => {
+        draft.battleData = castDraft({
+          status: 'active' as const,
+          player: nextState.player,
+          enemies: nextState.enemies,
+          randomService: battleData.randomService,
+        })
+      })
+    },
+
+    endEnemyTurn: () => {
+      const { battleData } = get()
+      if (battleData.status !== 'active') return
+
+      const tickedEnemies: readonly Enemy[] = battleData.enemies.map(tickStatusEffects)
+
+      set((draft) => {
+        draft.battleData = castDraft({
+          status: 'active' as const,
+          player: battleData.player,
+          enemies: tickedEnemies,
           randomService: battleData.randomService,
         })
       })

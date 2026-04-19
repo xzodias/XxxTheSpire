@@ -9,6 +9,7 @@ import { useRunMapSync } from '../hooks/useRunMapSync'
 import { TitleScreen } from './screens/TitleScreen'
 import { CharacterSelectScreen } from './screens/CharacterSelectScreen'
 import { MapScreen } from './screens/MapScreen'
+import { BattleScreen } from './screens/BattleScreen'
 
 // ラン開始前の画面種別（useRunViewModel 管理外の UI フロー）
 type PreRunScreen = 'title' | 'characterSelect'
@@ -61,6 +62,7 @@ export function App(): React.JSX.Element {
           <MapScreen />
         </>
       )}
+      {runData.currentScreen === ScreenType.Combat && <BattleScreen />}
     </div>
   )
 }

@@ -3,13 +3,14 @@ import { type StatusEffectId } from '../../shared/types'
 /**
  * 状態効果種別
  *
+ * ダメージ計算等から受動的に参照される値のみを定義する。
+ * トリガー型の効果（Poison/Burn 等）は Power（Observer パターン）として別途実装する。
+ *
  * - strength    : 筋力（攻撃力増加、スタック型）
  * - dexterity   : 俊敏（ブロック量増加、スタック型）
  * - artifact    : アーティファクト（デバフ無効化、スタック型）
  * - vulnerable  : 脆弱（被ダメージ増加、持続ターン型）
  * - weak        : 縛り（攻撃力減少、持続ターン型）
- * - poison      : 毒（ターン開始時ダメージ、スタック型）
- * - burn        : 燃焼（ターン終了時ダメージ、スタック型）
  */
 export const StatusEffectType = {
   Strength: 'Strength',
@@ -17,8 +18,6 @@ export const StatusEffectType = {
   Artifact: 'Artifact',
   Vulnerable: 'Vulnerable',
   Weak: 'Weak',
-  Poison: 'Poison',
-  Burn: 'Burn',
 } as const
 
 export type StatusEffectType = (typeof StatusEffectType)[keyof typeof StatusEffectType]
@@ -30,8 +29,6 @@ export const StackingStatusEffectTypes = [
   StatusEffectType.Strength,
   StatusEffectType.Dexterity,
   StatusEffectType.Artifact,
-  StatusEffectType.Poison,
-  StatusEffectType.Burn,
 ] as const satisfies readonly StatusEffectType[]
 
 /**
