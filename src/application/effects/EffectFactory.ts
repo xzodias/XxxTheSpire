@@ -4,8 +4,12 @@ import { DamageEffect } from './DamageEffect'
 import { BlockEffect } from './BlockEffect'
 import { DrawEffect } from './DrawEffect'
 import { AllEnemiesDamageEffect } from './AllEnemiesDamageEffect'
+import { ApplyStatusEffectEffect } from './ApplyStatusEffectEffect'
+import { StatusEffectType } from '../../domain/entities/StatusEffect'
 
 type EffectBuilder = (def: EffectDef) => Effect
+
+const VALID_STATUS_EFFECT_TYPES: ReadonlySet<string> = new Set(Object.values(StatusEffectType))
 
 /**
  * エフェクトビルダーレジストリ
@@ -18,6 +22,18 @@ const EFFECT_BUILDERS: Record<string, EffectBuilder> = {
   block: (def) => new BlockEffect(def.value),
   draw: (def) => new DrawEffect(def.value),
   all_enemies_damage: (def) => new AllEnemiesDamageEffect(def.value),
+  apply_status_effect: (def) => {
+    const seType = def.statusEffectType
+    if (!seType || !VALID_STATUS_EFFECT_TYPES.has(seType)) {
+      throw new Error(`apply_status_effect: unknown statusEffectType "${seType}"`)
+    }
+    if (def.target !== 'player' && def.target !== 'enemy') {
+      throw new Error(
+        `apply_status_effect: target must be 'player' or 'enemy', got "${def.target}"`,
+      )
+    }
+    return new ApplyStatusEffectEffect(seType as StatusEffectType, def.value, def.target)
+  },
 }
 
 /**

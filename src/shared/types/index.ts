@@ -32,6 +32,8 @@ export type EffectDef = {
   readonly type: string
   readonly value: number
   readonly target?: string
+  /** apply_status_effect エフェクト専用: 付与する状態効果の種別（StatusEffectType 文字列）*/
+  readonly statusEffectType?: string
 }
 
 // --- Re-exports ---
